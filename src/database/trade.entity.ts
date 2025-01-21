@@ -2,8 +2,18 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Stock } from './stock.entity';
 
-@Entity()
-export class Sell extends BaseEntity {
+export enum TradeType {
+  BUY = 'BUY',
+  SELL = 'SELL',
+}
+
+export enum TradeAction {
+  FINISHED = 'FINISHED',
+  WAITING = 'WAITING',
+}
+
+@Entity({ name: 'trade', schema: 'stock-trading' })
+export class Trade extends BaseEntity {
   @Column({ nullable: false, comment: '매도량' })
   quantity: number;
 
@@ -11,9 +21,15 @@ export class Sell extends BaseEntity {
   price: number;
 
   @Column({ nullable: true })
-  code: Stock;
+  code: string;
 
-  @ManyToOne(() => Stock, (stock) => stock.purchase)
+  @Column({ nullable: true })
+  type: TradeType;
+
+  @Column({ nullable: true })
+  action: TradeAction;
+
+  @ManyToOne(() => Stock, (stock) => stock.trade)
   @JoinColumn({ name: 'stockCode', referencedColumnName: 'code' })
   stock: Stock;
 }

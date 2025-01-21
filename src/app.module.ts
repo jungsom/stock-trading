@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { StockModule } from './stock/stock.module';
+import { TradeModule } from './trade/trade.module';
 
 @Module({
   imports: [
@@ -14,13 +16,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         username: config.get<string>('DATABASE_USERNAME'),
         password: config.get<string>('DATABASE_PASSWORD'),
         database: config.get<string>('DATABASE_NAME'),
-        entities: [],
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
+        logging: true,
       })
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-    })
+    }),
+    StockModule,
+    TradeModule,
   ],
   controllers: [],
   providers: [],
