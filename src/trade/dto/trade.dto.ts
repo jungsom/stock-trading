@@ -1,19 +1,17 @@
 import { TradeType } from 'src/database/trade.entity';
 
 export class TradeInput {
+  code?: string;
+
   quantity?: number;
 
   price?: number;
 
-  code?: string;
-
   type?: TradeType;
+
+  action?: string;
 }
 
 export class TradeOutput {
-  quantity?: number;
-
-  price?: number;
-
-  code?: string;
+  success: boolean;
 }

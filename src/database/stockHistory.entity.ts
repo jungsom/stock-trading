@@ -4,6 +4,9 @@ import { Stock } from './stock.entity';
 
 @Entity({ name: 'stock-history', schema: 'stock-trading' })
 export class StockHistory extends BaseEntity {
+  @Column({ nullable: true, comment: '종목 코드' })
+  code: string;
+  
   @Column({ nullable: true, comment: '날짜' })
   date: Date;
 

@@ -14,6 +14,9 @@ export class Stock extends BaseEntity {
   @Column({ nullable: true, comment: '주가 지수' })
   index: string;
 
+  @Column({ nullable: true, comment: '종목 분류'})
+  category: string;
+
   @OneToMany(() => Trade, (trade) => trade.stock)
   trade: Trade[];
 

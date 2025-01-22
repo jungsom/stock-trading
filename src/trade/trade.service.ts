@@ -3,7 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TradeInput } from './dto/trade.dto';
 import { Stock } from 'src/database/stock.entity';
-import { Trade } from 'src/database/trade.entity';
+import { Trade, TradeType } from 'src/database/trade.entity';
+import { StockInput } from 'src/stock/dto/stock.dto';
+import { StockHistory } from 'src/database/stockHistory.entity';
 
 @Injectable()
 export class TradeService {
@@ -12,36 +14,61 @@ export class TradeService {
     private readonly tradeRepository: Repository<Trade>,
     @InjectRepository(Stock)
     private readonly stockRepository: Repository<Stock>,
+    @InjectRepository(StockHistory)
+    private readonly stockHistoryRepository: Repository<StockHistory>,
   ) {}
 
-  async buyStock(input: TradeInput) {
+  async tradeStock(input: TradeInput) {
     const stock = await this.stockRepository.findOne({
       where: { code: input.code },
     });
-    await this.checkMinSellPrice(stock, input.price);
 
-    return stock;
-    // 매도 예약 db에 원하는 매수가가 있을 경우) 매수-매도 거래 체결
-    // 원하는 매수가가 없을 경우 ) 매수가 저장 (매도에 새로운 데이터가 올라올때까지 기다림)
-    // return await this.buyRepository.save(input);
+    const stockHistory = await this.stockHistoryRepository.findOne({
+      where: { code: input.code },
+    });
+
+    const orders = await this.tradeRepository.find({
+      where: { price: input.price, code: input.code, type: input.type },
+      order: { createdAt: 'ASC' },
+    });
+
+    return this.handleOrders(orders, input);
   }
 
-  async sellStock(input: TradeInput) {
-    // 매수 예약 db에 원하는 매도가가 있을 경우) 매수-매도 거래 체결
-    // 그 외) 매도가 저장
-    // return await this.sellRepository.save(input);
+  private async handleOrders(sellOrders: Trade[], input: TradeInput) {
+    for (let order of sellOrders) {
+      // 매도 주문 수량 > 매수 주문 수량
+      if (order.quantity > input.quantity) {
+        order.quantity -= input.quantity; // 매도 남은 수량 업데이트
+        await this.tradeRepository.save(order);
+        await this.createTradeHistory(input, order); // 거래 내역 기록 (//TODO: 타입 추가)
+        break;
+        // 매도 주문 수량 < 매수 주문 수량
+      } else if (order.quantity < input.quantity) {
+        input.quantity -= order.quantity; // 매수 남은 수량 업데이트
+        await this.tradeRepository.delete(order); // 매도 주문 삭제
+        await this.createTradeHistory(input, order); // 거래 내역 기록 (//TODO: 타입 추가)
+        continue;
+        // 매도 주문 수량 == 매수 주문 수량
+      } else {
+        await this.tradeRepository.delete(order); // 매도 주문 삭제
+        await this.createTradeHistory(input, order); // 거래 내역 기록 (//TODO: 타입 추가)
+        break;
+      }
+    }
 
-    const stock = await this.stockRepository.findOne({
-        where: { code: input.code },
-      });
-      await this.checkMinSellPrice(stock, input.price);
-  
-      return stock;
+    return { success: true };
+  }
+  private async ArrangeMarketPrice(
+    stockHistory: StockHistory,
+    buyPrice: number,
+  ) {
+    if (stockHistory.marektPrice > buyPrice) {
+      stockHistory.marektPrice = buyPrice;
+      stockHistory.lowPrice = buyPrice;
+    }
   }
 
-  async checkMinSellPrice(stock: Stock, buyPrice: number) {
-    // if (stock.= > buyPrice) {
-    //     stock.price = buyPrice;
-    //     return await this.buyRepository.save(stock);
+  private async createTradeHistory(input: TradeInput, order: Trade) {
   }
 }
