@@ -8,8 +8,6 @@ export class TradeInput {
   price?: number;
 
   type?: TradeType;
-
-  action?: string;
 }
 
 export class TradeOutput {

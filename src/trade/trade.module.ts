@@ -5,9 +5,10 @@ import { TradeController } from './trade.controller';
 import { Trade } from 'src/database/trade.entity';
 import { Stock } from 'src/database/stock.entity';
 import { StockHistory } from 'src/database/stockHistory.entity';
+import { TradeHistory } from 'src/database/tradeHistory.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Trade, Stock, StockHistory])],
+  imports: [TypeOrmModule.forFeature([Trade, Stock, StockHistory, TradeHistory])],
   providers: [TradeService, Logger],
   controllers: [TradeController],
   exports: [],

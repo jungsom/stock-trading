@@ -34,6 +34,5 @@ export class StockService {
     .select('*')
     .addSelect('SUM(stock.vulume)', 'totalVolumn')
     .groupBy('price')
-    .where('stock.action = :action', { action: input.action })
   }
 }
