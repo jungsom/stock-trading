@@ -30,7 +30,7 @@ export class TradeService {
 
       if (orders.length === 0) {
         await this.tradeRepository.save(input); // 매수 주문 저장
-        return { isSuccess: true, message: '매수 주문이 예약되었습니다.' };
+        return { isSuccess: true };
       }
 
       return this.buyStocks(orders, input);
@@ -42,7 +42,7 @@ export class TradeService {
 
       if (orders.length === 0) {
         await this.tradeRepository.save(input); // 매수 주문 저장
-        return { isSuccess: true, message: '매도 주문이 예약되었습니다.' };
+        return { isSuccess: true };
       }
 
       return this.sellStocks(orders, input);
@@ -82,7 +82,7 @@ export class TradeService {
       }
     }
 
-    return { isSuccess: true, message: `매도도 거래가 완료되었습니다.` };
+    return { isSuccess: true };
   }
 
   /** 주식 매수 */
@@ -118,7 +118,7 @@ export class TradeService {
       }
     }
 
-    return { isSuccess: true, message: '매수 주문이 거래되었습니다.' };
+    return { isSuccess: true };
   }
 
   /** 거래 체결 시, 매도가가 최저가일 시 시장가 변경 */

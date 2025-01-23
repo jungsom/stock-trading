@@ -6,11 +6,15 @@ import { Trade } from 'src/database/trade.entity';
 import { Stock } from 'src/database/stock.entity';
 import { StockHistory } from 'src/database/stockHistory.entity';
 import { TradeHistory } from 'src/database/tradeHistory.entity';
+import { ProducerService } from 'src/producer/producer.service';
+import { ProducerModule } from 'src/producer/producer.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Trade, Stock, StockHistory, TradeHistory])],
-  providers: [TradeService, Logger],
+  imports: [
+    TypeOrmModule.forFeature([Trade, Stock, StockHistory, TradeHistory]),
+    ProducerModule,
+  ],
+  providers: [TradeService, ProducerService, Logger],
   controllers: [TradeController],
-  exports: [],
 })
 export class TradeModule {}
