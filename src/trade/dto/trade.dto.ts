@@ -11,5 +11,5 @@ export class TradeInput {
 }
 
 export class TradeOutput {
-  success: boolean;
+  isSuccess?: boolean;
 }
