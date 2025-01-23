@@ -27,6 +27,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/typeorm": "^11.0.0",
     "axios": "^1.7.9",
+    "config": "^3.3.12",
     "mysql": "^2.18.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",

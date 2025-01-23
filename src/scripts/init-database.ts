@@ -3,19 +3,22 @@ import { StockHistory } from '../database/stockHistory.entity';
 import { Trade, TradeType } from '../database/trade.entity';
 import { DataSource } from 'typeorm';
 
+import config from 'config';
+
 export const AppDataSource = new DataSource({
   type: 'mysql',
-  host: 'localhost',
-  port: 3306,
-  username: 'root',
-  password: '0414',
-  database: 'stock-trading',
+  host: config.get<string>('DATABASE_HOST'),
+  port: config.get<number>('DATABASE_PORT'),
+  username: config.get<string>('DATABASE_USERNAME'),
+  password: config.get<string>('DATABASE_PASSWORD'),
+  database: config.get<string>('DATABASE_NAME'),
   entities: [Stock, Trade, StockHistory],
   synchronize: true,
 });
 
 const tradeRepository = AppDataSource.getRepository(Trade);
 const stockRepository = AppDataSource.getRepository(Stock);
+
 const stockHistoryRepository = AppDataSource.getRepository(StockHistory);
 
 // 매수 주문 스크립트 (1000원대, 100원단위, 100개)
