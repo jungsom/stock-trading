@@ -6,6 +6,7 @@ import { TradeModule } from './trade/trade.module';
 import { BullModule } from '@nestjs/bull';
 import { ConsumerModule } from './consumer/consumer.module';
 import { ProducerModule } from './producer/producer.module';
+import { EventGateway } from './event/event.gateway';
 
 @Module({
   imports: [
@@ -44,6 +45,6 @@ import { ProducerModule } from './producer/producer.module';
     ProducerModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [EventGateway],
 })
 export class AppModule {}

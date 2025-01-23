@@ -18,7 +18,6 @@ export class TradeController {
   @Post()
   postTrade(@Body() input: TradeInput): Promise<TradeOutput> {
     const result = this.producerService.onTradeStock(input);
-    // const result = this.tradeService.tradeStock(input);
     return result;
   }
 }
