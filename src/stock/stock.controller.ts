@@ -12,8 +12,8 @@ export class StockController {
    * @return {Promise<StockOutput>}
    */
   @Get()
-  async getStockInfo(@Body() input: StockInput): Promise<StockOutput> {
+  async getStock(@Body() input: StockInput): Promise<StockOutput> {
     console.log('input :', input);
-    return await this.stockService.getStockInfo(input);
+    return await this.stockService.getStock(input);
   }
 }

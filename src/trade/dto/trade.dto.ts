@@ -11,5 +11,15 @@ export class TradeInput {
 }
 
 export class TradeOutput {
-  isSuccess?: boolean;
+  quantity: number;
+
+  price: number;
+
+  code: string;
+
+  type: TradeType;
+
+  createdAt: Date;
+
+  updatedAt: Date;
 }

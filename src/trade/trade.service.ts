@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TradeInput } from './dto/trade.dto';
+import { TradeInput, TradeOutput } from './dto/trade.dto';
 import { Stock } from 'src/database/stock.entity';
 import { Trade, TradeType } from 'src/database/trade.entity';
 import { StockHistory } from 'src/database/stockHistory.entity';
@@ -19,6 +19,14 @@ export class TradeService {
     @InjectRepository(TradeHistory)
     private readonly tradeHistoryRepository: Repository<TradeHistory>,
   ) {}
+
+  /** 남은 주식 거래 조회 */
+  async getAllTrades(input: TradeInput) {
+    const trades = await this.tradeRepository.find({
+      where: { code: input.code },
+    });
+    return trades;
+  }
 
   /** 타입에 따른 주식 거래 체결 */
   async tradeStock(input: TradeInput) {
@@ -49,7 +57,7 @@ export class TradeService {
     }
   }
 
-  /** 주식 매도 */
+  /** 주식 거래가 매도인 경우 */
   private async sellStocks(sellOrders: Trade[], input: TradeInput) {
     for (let order of sellOrders) {
       // 매도 주문 수량 > 매수 주문 수량
@@ -85,7 +93,7 @@ export class TradeService {
     return { isSuccess: true };
   }
 
-  /** 주식 매수 */
+  /** 주식 거래가 매수인 경우 */
   private async buyStocks(buyOrders: Trade[], input: TradeInput) {
     for (let order of buyOrders) {
       // 매수 주문 수량 > 매도 주문 수량
