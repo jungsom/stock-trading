@@ -5,6 +5,7 @@ import { StockService } from './stock.service';
 import { StockController } from './stock.controller';
 import { StockHistory } from 'src/database/stockHistory.entity';
 import { Trade } from 'src/database/trade.entity';
+import { EventGateway } from 'src/event/event.gateway';
 
 @Module({
   imports: [
@@ -12,6 +13,6 @@ import { Trade } from 'src/database/trade.entity';
   ],
   providers: [StockService, Logger],
   controllers: [StockController],
-  exports: [],
+  exports: [StockService],
 })
 export class StockModule {}

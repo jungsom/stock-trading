@@ -18,21 +18,43 @@ export class StockService {
     private readonly tradeRepository: Repository<Trade>,
   ) {}
 
-  // 특정 주식 정보 조회
+  /** 특정 주식 정보 조회 */
   async getStock(input: StockInput) {
-    const stock = await this.stockRepository.findOne({
+    const stock = await this.stockHistoryRepository.findOne({
       where: { code: input.code },
     });
 
     return stock;
   }
 
-  // 현재 매도 호가에 따른 거래량 조회
+  /** 현재 매도 호가에 따른 거래량 조회 */
   async getStockState(input: TradeInput) {
     const stockHistory = await this.tradeRepository
       .createQueryBuilder('trade')
       .select('*')
       .addSelect('SUM(stock.vulume)', 'totalVolumn')
       .groupBy('price');
+
+    return stockHistory;
+  }
+
+  /** 거래 체결 시, 주식 가격 변경 */
+  async changeStockPrice(input: TradeInput) {
+    const stockHistory = await this.stockHistoryRepository.findOne({
+      where: { code: input.code },
+    });
+    stockHistory.marketPrice = input.price;
+
+    if (stockHistory.highPrice < input.price) {
+      stockHistory.highPrice = input.price;
+    }
+
+    if (stockHistory.lowPrice > input.price) {
+      stockHistory.lowPrice = input.price;
+    }
+
+    const result = await this.stockHistoryRepository.save(stockHistory);
+    // this.eventGateway.broadCastStock(result);
+    return result;
   }
 }

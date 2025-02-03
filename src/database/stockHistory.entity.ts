@@ -10,8 +10,11 @@ export class StockHistory extends BaseEntity {
   @Column({ nullable: true, comment: '날짜' })
   date: Date;
 
+  @Column({ nullable: true, comment: '현재가' })
+  currentPrice: number;
+
   @Column({ nullable: true, comment: '시가' })
-  marektPrice: number;
+  marketPrice: number;
 
   @Column({ nullable: true, comment: '종가' })
   closePrice: number;

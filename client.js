@@ -8,10 +8,10 @@ const socket = io(SERVER_URL, {
 
 socket.on('connect', () => {
   console.log('✅ Connected to the WebSocket server');
-  socket.emit('eventName', { message: 'Hello, Server!' });
+  socket.emit('subscribe-stock', { message: '주식 가격 웹소켓 연결 완료' });
 });
 
-socket.on('events', (data) => {
+socket.on('stock', (data) => {
   console.log('📩 Received event data:', data);
 });
 

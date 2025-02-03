@@ -12,10 +12,6 @@ export class TradeService {
   constructor(
     @InjectRepository(Trade)
     private readonly tradeRepository: Repository<Trade>,
-    @InjectRepository(Stock)
-    private readonly stockRepository: Repository<Stock>,
-    @InjectRepository(StockHistory)
-    private readonly stockHistoryRepository: Repository<StockHistory>,
     @InjectRepository(TradeHistory)
     private readonly tradeHistoryRepository: Repository<TradeHistory>,
   ) {}
@@ -127,17 +123,6 @@ export class TradeService {
     }
 
     return { isSuccess: true };
-  }
-
-  /** 거래 체결 시, 매도가가 최저가일 시 시장가 변경 */
-  private async ArrangeMarketPrice(
-    stockHistory: StockHistory,
-    buyPrice: number,
-  ) {
-    if (stockHistory.marektPrice > buyPrice) {
-      stockHistory.marektPrice = buyPrice;
-      stockHistory.lowPrice = buyPrice;
-    }
   }
 
   /** 거래 내역 생성 */

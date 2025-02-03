@@ -8,13 +8,15 @@ import { StockHistory } from 'src/database/stockHistory.entity';
 import { TradeHistory } from 'src/database/tradeHistory.entity';
 import { ProducerService } from 'src/producer/producer.service';
 import { ProducerModule } from 'src/producer/producer.module';
+import { StockService } from 'src/stock/stock.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Trade, Stock, StockHistory, TradeHistory]),
     ProducerModule,
   ],
-  providers: [TradeService, ProducerService, Logger],
+  providers: [TradeService, ProducerService, Logger, StockService],
   controllers: [TradeController],
+  exports: [TradeService],
 })
 export class TradeModule {}

@@ -8,7 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Stock } from 'src/database/stock.entity';
+import { StockHistory } from 'src/database/stockHistory.entity';
 import { Trade } from 'src/database/trade.entity';
 import { StockInput } from 'src/stock/dto/stock.dto';
 import { StockService } from 'src/stock/stock.service';
@@ -31,7 +31,7 @@ export class EventGateway
   private connectionClients: string[] = [];
 
   // Send Stock Info
-  broadCastStock(stock: Stock) {
+  broadCastStock(stock: StockHistory) {
     this.server.emit('stock', stock);
   }
 
@@ -48,7 +48,7 @@ export class EventGateway
   }
 
   // Listen Trade Info
-  @SubscribeMessage('subscribe-stock')
+  @SubscribeMessage('subscribe-trade')
   handleTradeEvent(@MessageBody() message: TradeInput) {
     const trade = this.tradeService.getAllTrades(message);
     this.server.emit('trade', trade);
