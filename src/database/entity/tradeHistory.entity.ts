@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Stock } from './stock.entity';
 import { BaseEntity } from './base.entity';
 
-export enum TradeType {
+export enum TradeHistoryType {
   ALL_TRADE = 'ALL_TRADE',
   SPLIT_TRADE = 'SPLIT_TRADE',
 }
@@ -19,7 +19,7 @@ export class TradeHistory extends BaseEntity {
   code: string;
 
   @Column({ nullable: true })
-  type: TradeType;
+  type: TradeHistoryType;
 
   @Column({ nullable: true })
   userId: number;

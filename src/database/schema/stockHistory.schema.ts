@@ -37,17 +37,17 @@ export class StockHistory extends BaseEntity {
   /** 거래량 */
   volume: number;
 
-  /** 전날 종가 대비 */
-  @Prop()
-  contrastPrice?: number;
+  // /** 전날 종가 대비 */
+  // @Prop()
+  // contrastPrice?: number;
 
-  /** 등락률 */
-  @Prop()
-  flucRate?: number;
+  // /** 등락률 */
+  // @Prop()
+  // flucRate?: number;
 
-  /** 시가총액 */
-  @Prop()
-  marketCap?: number;
+  // /** 시가총액 */
+  // @Prop()
+  // marketCap?: number;
 
   @Prop({ type: mongoose.Schema.Types.Date, name: 'deleted_at', default: null })
   deletedAt?: Date | null;

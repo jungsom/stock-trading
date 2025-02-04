@@ -14,6 +14,7 @@ import { Model } from 'mongoose';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { onTradeStockInput } from 'src/trade/dto/on-trade-stock.dto';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class StockService {
@@ -37,9 +38,11 @@ export class StockService {
       return cachedStock;
     }
 
-    const newStock = await this.stockHistoryModel.findOne({
-      where: { code: input.code },
-    });
+    const newStock = await this.stockHistoryModel
+      .findOne({
+        where: { code: input.code },
+      })
+      .sort({ createdAt: -1 });
 
     await this.cacheManager.set(cacheKey, newStock);
 
@@ -59,9 +62,9 @@ export class StockService {
 
   /** 거래 체결 시, 주식 가격 변경 */
   async changeStockPrice(input: onTradeStockInput) {
-    const stockHistory = await this.stockHistoryModel.findOne({
-      where: { code: input.code },
-    });
+    const stockHistory = await this.stockHistoryModel
+      .findOne({ code: input.code })
+      .sort({ createdAt: -1 });
 
     let isChanged = false;
     const updateData: Partial<StockHistory> = {};
@@ -83,7 +86,7 @@ export class StockService {
 
     if (isChanged) {
       const result = await this.stockHistoryModel.findOneAndUpdate(
-        { code: input.code },
+        { _id: stockHistory._id },
         { $set: updateData },
         { new: true },
       );
@@ -94,5 +97,24 @@ export class StockService {
     }
   }
 
-  // TODO: 1분마다 stockHistory 갱신(새 데이터 생성)
+  // renew storyHistory cycle: 1 minute
+  @Cron('45 * * * * *')
+  async createStockHistory() {
+    const lastStockHistory = await this.stockHistoryModel
+      .findOne()
+      .sort({ createdAt: -1 });
+
+    if (lastStockHistory) {
+      const newStockHistory = new this.stockHistoryModel({
+        code: lastStockHistory.code,
+        currentPrice: lastStockHistory.currentPrice,
+        marketPrice: lastStockHistory.marketPrice,
+        closePrice: lastStockHistory.closePrice,
+        highPrice: lastStockHistory.highPrice,
+        lowPrice: lastStockHistory.lowPrice,
+        date: new Date(),
+      });
+      await newStockHistory.save();
+    }
+  }
 }

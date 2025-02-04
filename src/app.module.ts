@@ -9,6 +9,7 @@ import { ProducerModule } from './producer/producer.module';
 import { EventGateway } from './event/event.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { CacheModule } from '@nestjs/cache-manager';
         password: config.get<string>('DATABASE_PASSWORD'),
         database: config.get<string>('DATABASE_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true
+        synchronize: true,
       }),
     }),
     MongooseModule.forRootAsync({
@@ -47,7 +48,10 @@ import { CacheModule } from '@nestjs/cache-manager';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    CacheModule.register(),
+    ScheduleModule.forRoot(),
+    CacheModule.register({
+      isGlobal: true,
+    }),
     StockModule,
     TradeModule,
     ConsumerModule,

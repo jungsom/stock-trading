@@ -16,7 +16,9 @@ import { MongooseModule } from '@nestjs/mongoose';
     MongooseModule.forFeature([
       { name: StockHistory.name, schema: StockHistorySchema },
     ]),
+    
   ],
+
   providers: [StockService, Logger],
   controllers: [StockController],
   exports: [StockService],

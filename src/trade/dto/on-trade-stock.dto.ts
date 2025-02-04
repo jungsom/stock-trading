@@ -1,5 +1,5 @@
 import { BaseEntity } from 'src/database/entity/base.entity';
-import { TradeType } from 'src/database/entity/tradeHistory.entity';
+import { TradeType } from 'src/database/entity/trade.entity';
 
 export class onTradeStockInput extends BaseEntity {
   code?: string;
@@ -13,4 +13,5 @@ export class onTradeStockInput extends BaseEntity {
 
 export class onTradeStockOutput {
   isSuccess?: boolean;
+  message?: string;
 }

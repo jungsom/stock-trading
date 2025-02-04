@@ -18,6 +18,6 @@ export class ProducerService {
       removeOnFail: true,
     });
     const result = await job.finished();
-    return result ?? { isSuccess: true };
+    return result ?? { isSuccess: true, message: '거래가 성공하였습니다.' };
   }
 }

@@ -21,6 +21,8 @@ export class Trade extends BaseEntity {
   @Column({ nullable: true })
   type: TradeType;
 
+  // TODO: User Entity 추가 후 수정정
+
   @ManyToOne(() => Stock, (stock) => stock.trade)
   @JoinColumn({ name: 'stockCode', referencedColumnName: 'code' })
   stock: Stock;
