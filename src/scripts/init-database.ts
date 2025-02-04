@@ -1,6 +1,6 @@
-import { Stock } from '../database/stock.entity';
-import { StockHistory } from '../database/stockHistory.entity';
-import { Trade, TradeType } from '../database/trade.entity';
+import { Stock } from '../database/entity/stock.entity';
+import { StockHistory } from '../database/schema/stockHistory.schema';
+import { Trade, TradeType } from '../database/entity/trade.entity';
 import { DataSource } from 'typeorm';
 
 import config from 'config';

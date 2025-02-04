@@ -1,4 +1,4 @@
-import { TradeType } from 'src/database/trade.entity';
+import { TradeType } from 'src/database/entity/trade.entity';
 
 export class TradeInput {
   code?: string;

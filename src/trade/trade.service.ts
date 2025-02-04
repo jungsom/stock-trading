@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TradeInput, TradeOutput } from './dto/trade.dto';
-import { Stock } from 'src/database/stock.entity';
-import { Trade, TradeType } from 'src/database/trade.entity';
-import { StockHistory } from 'src/database/stockHistory.entity';
-import { TradeHistory } from 'src/database/tradeHistory.entity';
+import { TradeInput } from './dto/trade.dto';
+import { Trade, TradeType } from 'src/database/entity/trade.entity';
+import { TradeHistory } from 'src/database/entity/tradeHistory.entity';
 
 @Injectable()
 export class TradeService {
@@ -127,7 +125,6 @@ export class TradeService {
 
   /** 거래 내역 생성 */
   private async createTradeHistory(input: TradeInput) {
-    console.log('input :', input);
     const tradeHistory = this.tradeHistoryRepository.create({
       code: input.code,
       quantity: input.quantity,

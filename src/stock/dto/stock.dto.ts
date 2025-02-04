@@ -1,5 +1,3 @@
-import { Stock } from 'src/database/stock.entity';
-
 export class StockInput {
   code?: string;
 

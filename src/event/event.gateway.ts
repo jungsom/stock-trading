@@ -1,4 +1,5 @@
 import {
+  ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -8,11 +9,10 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { StockHistory } from 'src/database/stockHistory.entity';
-import { Trade } from 'src/database/trade.entity';
+import { StockHistory } from 'src/database/schema/stockHistory.schema';
 import { StockInput } from 'src/stock/dto/stock.dto';
 import { StockService } from 'src/stock/stock.service';
-import { TradeInput } from 'src/trade/dto/trade.dto';
+import { onTradeStockInput } from 'src/trade/dto/on-trade-stock.dto';
 import { TradeService } from 'src/trade/trade.service';
 
 @WebSocketGateway()
@@ -31,27 +31,37 @@ export class EventGateway
   private connectionClients: string[] = [];
 
   // Send Stock Info
-  broadCastStock(stock: StockHistory) {
+  async broadCastStock(stock: StockHistory) {
     this.server.emit('stock', stock);
   }
 
   // Send Trade Info
-  broadCastTrade(trade: Trade) {
-    this.server.emit('trade', trade);
+  async broadCastTrade(trade: onTradeStockInput) {
+    const result = await this.tradeService.getAllTrades(trade);
+    console.log(result);
+    this.server.emit('trade', result);
   }
 
   // Listen Stock Info
   @SubscribeMessage('subscribe-stock')
-  handleStockEvent(@MessageBody() message: StockInput) {
+  handleStockEvent(
+    @MessageBody() message: StockInput,
+    @ConnectedSocket() client: Socket,
+  ) {
     const stock = this.stockService.getStock(message);
-    this.server.emit('stock', stock);
+    // this.server.emit('stock', stock);
+    return stock;
   }
 
   // Listen Trade Info
   @SubscribeMessage('subscribe-trade')
-  handleTradeEvent(@MessageBody() message: TradeInput) {
+  handleTradeEvent(
+    @MessageBody() message: onTradeStockInput,
+    @ConnectedSocket() client: Socket,
+  ) {
     const trade = this.tradeService.getAllTrades(message);
-    this.server.emit('trade', trade);
+    // this.server.emit('trade', trade);
+    return trade;
   }
 
   // Initialize WebSocket Server

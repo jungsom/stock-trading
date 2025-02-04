@@ -7,6 +7,7 @@ import {
   onTradeStockOutput,
 } from './dto/on-trade-stock.dto';
 import { StockService } from 'src/stock/stock.service';
+import { EventGateway } from 'src/event/event.gateway';
 
 @Controller('trade')
 export class TradeController {
@@ -14,6 +15,7 @@ export class TradeController {
     private readonly tradeService: TradeService,
     private readonly stockService: StockService,
     private readonly producerService: ProducerService,
+    private readonly eventGateway: EventGateway,
   ) {}
 
   /**
@@ -25,8 +27,12 @@ export class TradeController {
   async postTrade(
     @Body() input: onTradeStockInput,
   ): Promise<onTradeStockOutput> {
-    const result = this.producerService.onTradeStock(input);
-    await this.stockService.changeStockPrice(input);
+    const result = await this.producerService.onTradeStock(input);
+    const stock = await this.stockService.changeStockPrice(input);
+    if (stock) {
+      await this.eventGateway.broadCastStock(stock);
+    }
+    await this.eventGateway.broadCastTrade(input);
     return result;
   }
 

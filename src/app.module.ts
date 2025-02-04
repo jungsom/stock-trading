@@ -7,6 +7,8 @@ import { BullModule } from '@nestjs/bull';
 import { ConsumerModule } from './consumer/consumer.module';
 import { ProducerModule } from './producer/producer.module';
 import { EventGateway } from './event/event.gateway';
+import { MongooseModule } from '@nestjs/mongoose';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -21,8 +23,14 @@ import { EventGateway } from './event/event.gateway';
         password: config.get<string>('DATABASE_PASSWORD'),
         database: config.get<string>('DATABASE_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
-        logging: true,
+        synchronize: true
+      }),
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        uri: config.get<string>('MONGODB_URI'),
       }),
     }),
     BullModule.forRootAsync({
@@ -39,6 +47,7 @@ import { EventGateway } from './event/event.gateway';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    CacheModule.register(),
     StockModule,
     TradeModule,
     ConsumerModule,

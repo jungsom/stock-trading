@@ -1,7 +1,6 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Trade } from './trade.entity';
-import { StockHistory } from './stockHistory.entity';
 
 @Entity({ name: 'stock', schema: 'stock-trading' })
 export class Stock extends BaseEntity {
@@ -19,7 +18,4 @@ export class Stock extends BaseEntity {
 
   @OneToMany(() => Trade, (trade) => trade.stock)
   trade: Trade[];
-
-  @OneToMany(() => StockHistory, (stockHistory) => stockHistory.stock)
-  stockHistory: StockHistory[];
 }

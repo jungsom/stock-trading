@@ -13,7 +13,6 @@ export class StockController {
    */
   @Get()
   async getStock(@Body() input: StockInput): Promise<StockOutput> {
-    console.log('input :', input);
     return await this.stockService.getStock(input);
   }
 }

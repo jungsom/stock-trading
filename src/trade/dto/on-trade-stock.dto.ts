@@ -1,6 +1,7 @@
-import { TradeType } from 'src/database/trade.entity';
+import { BaseEntity } from 'src/database/entity/base.entity';
+import { TradeType } from 'src/database/entity/tradeHistory.entity';
 
-export class onTradeStockInput {
+export class onTradeStockInput extends BaseEntity {
   code?: string;
 
   quantity?: number;

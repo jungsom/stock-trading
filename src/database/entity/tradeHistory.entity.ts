@@ -1,10 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
-import { Stock } from "./stock.entity";
-import { BaseEntity } from "./base.entity";
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Stock } from './stock.entity';
+import { BaseEntity } from './base.entity';
 
 export enum TradeType {
-    ALL_TRADE = 'ALL_TRADE',
-    SPLIT_TRADE = "SPLIT_TRADE"
+  ALL_TRADE = 'ALL_TRADE',
+  SPLIT_TRADE = 'SPLIT_TRADE',
 }
 
 @Entity({ name: 'trade-history', schema: 'stock-trading' })
