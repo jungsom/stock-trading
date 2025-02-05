@@ -22,7 +22,10 @@ export class TradeHistory extends BaseEntity {
   type: TradeHistoryType;
 
   @Column({ nullable: true })
-  userId: number;
+  seller: number;
+
+  @Column({ nullable: true })
+  buyer: number;
 
   @ManyToOne(() => Stock, (stock) => stock.trade)
   @JoinColumn({ name: 'stockCode', referencedColumnName: 'code' })

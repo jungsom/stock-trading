@@ -10,6 +10,8 @@ import { EventGateway } from './event/event.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -52,6 +54,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     CacheModule.register({
       isGlobal: true,
     }),
+    AuthModule,
+    UserModule,
     StockModule,
     TradeModule,
     ConsumerModule,

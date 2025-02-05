@@ -10,7 +10,11 @@ export class TradeHistoryInput {
 
   type?: TradeHistoryType;
 
-  stockCode?: Stock;
+  seller?: number;
+
+  buyer?: number;
+
+  stock?: Stock;
 }
 
 export class TradeHistoryOutput {
@@ -22,7 +26,9 @@ export class TradeHistoryOutput {
 
   type: TradeHistoryType;
 
-  createdAt: Date;
+  seller: number;
 
-  updatedAt: Date;
+  buyer: number;
+
+  createdAt: Date;
 }

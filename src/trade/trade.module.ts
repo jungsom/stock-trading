@@ -14,14 +14,18 @@ import { ProducerModule } from 'src/producer/producer.module';
 import { StockService } from 'src/stock/stock.service';
 import { EventGateway } from 'src/event/event.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from 'src/auth/auth.module';
+import { UserService } from 'src/user/user.service';
+import { User } from 'src/database/entity/user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Trade, Stock, TradeHistory]),
+    TypeOrmModule.forFeature([Trade, Stock, TradeHistory, User]),
     MongooseModule.forFeature([
       { name: StockHistory.name, schema: StockHistorySchema },
     ]),
     ProducerModule,
+    AuthModule,
   ],
   providers: [
     TradeService,
@@ -29,6 +33,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     Logger,
     StockService,
     EventGateway,
+    UserService
   ],
   controllers: [TradeController],
   exports: [TradeService],

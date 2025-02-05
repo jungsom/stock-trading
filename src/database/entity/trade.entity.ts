@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Stock } from './stock.entity';
+import { User } from './user.entity';
 
 export enum TradeType {
   BUY = 'BUY',
@@ -21,9 +22,14 @@ export class Trade extends BaseEntity {
   @Column({ nullable: true })
   type: TradeType;
 
-  // TODO: User Entity 추가 후 수정정
+  @Column({ nullable: true })
+  userId: number;
+
+  @ManyToOne(() => User, (user) => user.trade)
+  @JoinColumn({ name: 'user', referencedColumnName: 'id' })
+  user: User;
 
   @ManyToOne(() => Stock, (stock) => stock.trade)
-  @JoinColumn({ name: 'stockCode', referencedColumnName: 'code' })
+  @JoinColumn({ name: 'stock', referencedColumnName: 'code' })
   stock: Stock;
 }

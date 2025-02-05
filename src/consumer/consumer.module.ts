@@ -13,18 +13,21 @@ import {
 import { TradeConsumer } from './trade.consumer';
 import { ProducerModule } from 'src/producer/producer.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { User } from 'src/database/entity/user.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
     BullModule.registerQueue({
       name: 'trade-stock-queue',
     }),
-    TypeOrmModule.forFeature([Trade, TradeHistory, Stock]),
+    TypeOrmModule.forFeature([Trade, TradeHistory, Stock, User]),
     MongooseModule.forFeature([
       { name: StockHistory.name, schema: StockHistorySchema },
     ]),
     TradeModule,
     ProducerModule,
+    AuthModule,
   ],
   providers: [TradeConsumer, TradeService, Logger],
   exports: [],

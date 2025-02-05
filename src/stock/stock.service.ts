@@ -70,7 +70,7 @@ export class StockService {
         code: input.code,
       }).sort({ createdAt: -1 });
 
-      if (lowestSellOrder.price !== currentStockHistory.currentPrice) {
+      if (lowestSellOrder && lowestSellOrder.price !== currentStockHistory.currentPrice) {
         currentStockHistory.currentPrice = lowestSellOrder.price;
         console.log('시장가가 변동되었습니다.');
         await currentStockHistory.save();

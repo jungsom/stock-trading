@@ -9,6 +9,7 @@ import {
 } from 'src/database/schema/stockHistory.schema';
 import { Trade } from 'src/database/entity/trade.entity';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     MongooseModule.forFeature([
       { name: StockHistory.name, schema: StockHistorySchema },
     ]),
-    
+    AuthModule,
   ],
 
   providers: [StockService, Logger],
