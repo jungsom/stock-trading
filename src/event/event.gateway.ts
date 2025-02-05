@@ -38,7 +38,6 @@ export class EventGateway
   // Send Trade Info
   async broadCastTrade(trade: onTradeStockInput) {
     const result = await this.tradeService.getAllTrades(trade);
-    console.log(result);
     this.server.emit('trade', result);
   }
 

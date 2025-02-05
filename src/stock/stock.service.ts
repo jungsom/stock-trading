@@ -1,19 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { Stock } from 'src/database/entity/stock.entity';
 import { StockInput } from './dto/stock.dto';
 import {
   StockHistory,
   StockHistoryDocument,
 } from 'src/database/schema/stockHistory.schema';
-import { Trade } from 'src/database/entity/trade.entity';
+import { Trade, TradeType } from 'src/database/entity/trade.entity';
 import { TradeInput } from 'src/trade/dto/trade.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { onTradeStockInput } from 'src/trade/dto/on-trade-stock.dto';
 import { Cron } from '@nestjs/schedule';
 
 @Injectable()
@@ -60,45 +59,26 @@ export class StockService {
     return stockHistory;
   }
 
-  /** 거래 체결 시, 주식 가격 변경 */
-  async changeStockPrice(input: onTradeStockInput) {
-    const stockHistory = await this.stockHistoryModel
-      .findOne({ code: input.code })
-      .sort({ createdAt: -1 });
+    // 매수 가격 > 매도 가격 일 시, 체크
+    async checkCurrentPrice(input: TradeInput) {
+      const lowestSellOrder = await this.tradeRepository.findOne({
+        where: { code: input.code, type: TradeType.SELL },
+        order: { price: 'ASC' },
+      });
 
-    let isChanged = false;
-    const updateData: Partial<StockHistory> = {};
+      const currentStockHistory = await this.stockHistoryModel.findOne({
+        code: input.code,
+      }).sort({ createdAt: -1 });
 
-    if (stockHistory.marketPrice !== input.price) {
-      stockHistory.marketPrice = input.price;
-      isChanged = true;
+      if (lowestSellOrder.price !== currentStockHistory.currentPrice) {
+        currentStockHistory.currentPrice = lowestSellOrder.price;
+        console.log('시장가가 변동되었습니다.');
+        await currentStockHistory.save();
+      }
     }
-
-    if (stockHistory.highPrice < input.price) {
-      stockHistory.highPrice = input.price;
-      isChanged = true;
-    }
-
-    if (stockHistory.lowPrice > input.price) {
-      stockHistory.lowPrice = input.price;
-      isChanged = true;
-    }
-
-    if (isChanged) {
-      const result = await this.stockHistoryModel.findOneAndUpdate(
-        { _id: stockHistory._id },
-        { $set: updateData },
-        { new: true },
-      );
-
-      return result;
-    } else {
-      return null;
-    }
-  }
 
   // renew storyHistory cycle: 1 minute
-  @Cron('45 * * * * *')
+  @Cron('45 * * * * *', { timeZone: 'Asia/Seoul' })
   async createStockHistory() {
     const lastStockHistory = await this.stockHistoryModel
       .findOne()
@@ -108,7 +88,7 @@ export class StockService {
       const newStockHistory = new this.stockHistoryModel({
         code: lastStockHistory.code,
         currentPrice: lastStockHistory.currentPrice,
-        marketPrice: lastStockHistory.marketPrice,
+        openPrice: lastStockHistory.openPrice,
         closePrice: lastStockHistory.closePrice,
         highPrice: lastStockHistory.highPrice,
         lowPrice: lastStockHistory.lowPrice,

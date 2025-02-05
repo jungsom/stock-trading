@@ -34,8 +34,6 @@ export class TradeService {
         order: { price: 'ASC', createdAt: 'ASC' },
       });
 
-      console.log('✅ orders:', orders);
-
       if (orders.length === 0) {
         await this.tradeRepository.save(input); // 매수 주문 저장
         return {
@@ -156,15 +154,4 @@ export class TradeService {
     await this.tradeHistoryRepository.save(tradeHistory);
   }
 
-  // 매수 가격 > 매도 가격 일 시, 체크
-  async checkCurrentPrice(input: TradeInput) {
-    console.log('checkCurrentPrice input:', input);
-
-    const lowestSellOrder = await this.tradeRepository.findOne({
-      where: { price: LessThan(input.price), type: TradeType.SELL },
-      order: { price: 'ASC' },
-    });
-
-    return lowestSellOrder;
-  }
 }

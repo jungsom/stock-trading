@@ -20,7 +20,7 @@ export class StockHistory extends BaseEntity {
 
   /** 시가 */
   @Prop()
-  marketPrice: number;
+  openPrice: number;
 
   /** 종가 */
   @Prop()

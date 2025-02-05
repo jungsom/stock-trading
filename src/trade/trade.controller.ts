@@ -28,10 +28,7 @@ export class TradeController {
     @Body() input: onTradeStockInput,
   ): Promise<onTradeStockOutput> {
     const result = await this.producerService.onTradeStock(input);
-    const stock = await this.stockService.changeStockPrice(input);
-    if (stock) {
-      await this.eventGateway.broadCastStock(stock);
-    }
+    await this.stockService.checkCurrentPrice(input);
     await this.eventGateway.broadCastTrade(input);
     return result;
   }
