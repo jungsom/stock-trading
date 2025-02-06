@@ -10,8 +10,6 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { StockHistory } from 'src/database/schema/stockHistory.schema';
-import { StockHistoryInput } from 'src/stock/dto/stock-history.dto';
-import { StockInput } from 'src/stock/dto/stock.dto';
 import { StockService } from 'src/stock/stock.service';
 import { onTradeStockInput } from 'src/trade/dto/on-trade-stock.dto';
 import { TradeService } from 'src/trade/trade.service';
@@ -49,7 +47,7 @@ export class EventGateway
   // Listen Stock Info
   @SubscribeMessage('sent-stock')
   async handleStockEvent(
-    @MessageBody() message: onTradeStockInput,
+    @MessageBody() message: any,
     @ConnectedSocket() client: Socket,
   ) {
     const stock = await this.stockService.getStockHistory(message);
@@ -59,7 +57,7 @@ export class EventGateway
   // Listen Trade Info
   @SubscribeMessage('sent-trade')
   async handleTradeEvent(
-    @MessageBody() message: onTradeStockInput,
+    @MessageBody() message: any ,
     @ConnectedSocket() client: Socket,
   ) {
     const trade = await this.tradeService.getAllTrades(message);

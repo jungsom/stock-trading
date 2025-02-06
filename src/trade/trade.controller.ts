@@ -53,7 +53,10 @@ export class TradeController {
       });
 
       const result = await this.producerService.onTradeStock(input, user);
+
       await this.stockService.checkCurrentPrice(input);
+      // await this.stockService.checkHighLowPrice(input);
+
       await this.eventGateway.broadCastTrade(input);
 
       return result;
@@ -83,7 +86,9 @@ export class TradeController {
    * @return {Promise<TradeOutput[]>}
    */
   @Get()
-  async getAllTrades(@Body() input: TradeInput): Promise<TradeOutput[] | BaseOutput> {
+  async getAllTrades(
+    @Body() input: TradeInput,
+  ): Promise<TradeOutput[] | BaseOutput> {
     const transaction_id = uuid();
     try {
       this.logger.log({

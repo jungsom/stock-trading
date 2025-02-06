@@ -1,5 +1,5 @@
 export class PayLoad {
-  sub: number;
+  sub?: number;
 
-  user_email: string;
+  user_email?: string;
 }

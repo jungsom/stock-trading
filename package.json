@@ -33,7 +33,7 @@
     "@nestjs/platform-ws": "^11.0.5",
     "@nestjs/schedule": "^5.0.1",
     "@nestjs/typeorm": "^11.0.0",
-    "@nestjs/websockets": "^11.0.5",
+    "@nestjs/websockets": "^11.0.7",
     "@types/cache-manager": "^5.0.0",
     "@types/cookie-parser": "^1.4.8",
     "@types/jsonwebtoken": "^9.0.8",

@@ -10,14 +10,15 @@ import {
 import { Trade } from 'src/database/entity/trade.entity';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from 'src/auth/auth.module';
+import { TradeHistory } from 'src/database/entity/tradeHistory.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Stock, Trade]),
+    TypeOrmModule.forFeature([Stock, Trade, TradeHistory]),
     MongooseModule.forFeature([
       { name: StockHistory.name, schema: StockHistorySchema },
     ]),
-    AuthModule,
+    AuthModule
   ],
 
   providers: [StockService],

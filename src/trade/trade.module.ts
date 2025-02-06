@@ -25,7 +25,7 @@ import { User } from 'src/database/entity/user.entity';
       { name: StockHistory.name, schema: StockHistorySchema },
     ]),
     ProducerModule,
-    AuthModule,
+    AuthModule
   ],
   providers: [
     TradeService,

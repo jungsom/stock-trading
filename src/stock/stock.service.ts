@@ -12,6 +12,7 @@ import { Cache } from 'cache-manager';
 import { Cron } from '@nestjs/schedule';
 import { StockHistoryInput } from './dto/stock-history.dto';
 import { StockInput } from './dto/stock.dto';
+import { TradeHistory } from 'src/database/entity/tradeHistory.entity';
 
 @Injectable()
 export class StockService {
@@ -22,6 +23,8 @@ export class StockService {
     private readonly stockHistoryModel: Model<StockHistory>,
     @InjectRepository(Trade)
     private readonly tradeRepository: Repository<Trade>,
+    @InjectRepository(TradeHistory)
+    private readonly tradeHistoryRepository: Repository<TradeHistory>,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
@@ -64,7 +67,7 @@ export class StockService {
     return stockHistory;
   }
 
-  // 매수 가격 > 매도 가격 일 시, 체크
+  /** 시장가 체크 */
   async checkCurrentPrice(input: TradeInput) {
     const lowestSellOrder = await this.tradeRepository.findOne({
       where: { code: input.code, type: TradeType.SELL },
@@ -87,7 +90,39 @@ export class StockService {
     }
   }
 
-  // renew storyHistory cycle: 1 minute
+  /** 고가, 저가 체크  */
+  async checkHighLowPrice(input: TradeInput) {
+    const lowestTradePrice = await this.tradeHistoryRepository.findOne({
+      where: { code: input.code },
+      order: { price: 'ASC' },
+    });
+    const highestTraderPrice = await this.tradeHistoryRepository.findOne({
+      where: { code: input.code },
+      order: { price: 'DESC' },
+    });
+
+    const currentStockHistory = await this.stockHistoryModel
+      .findOne({
+        code: input.code,
+      })
+      .sort({ createdAt: -1 });
+
+    if (lowestTradePrice.price > currentStockHistory.highPrice) {
+      currentStockHistory.highPrice = input.price;
+    }
+
+    if (highestTraderPrice.price < currentStockHistory.lowPrice) {
+      currentStockHistory.lowPrice = input.price;
+    }
+
+    await currentStockHistory.save();
+  }
+
+  /** TODO: 거래량 업데이트 */
+
+  /** TODO: 시가, 종가 체크 */
+
+  /** 주식 가격 업데이트 (주기 : 1분마다) */
   @Cron('45 * * * * *', { timeZone: 'Asia/Seoul' })
   async createStockHistory() {
     const lastStockHistory = await this.stockHistoryModel

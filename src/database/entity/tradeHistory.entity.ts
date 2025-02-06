@@ -9,7 +9,7 @@ export enum TradeHistoryType {
 
 @Entity({ name: 'trade-history', schema: 'stock-trading' })
 export class TradeHistory extends BaseEntity {
-  @Column({ nullable: false, comment: '매도량' })
+  @Column({ nullable: true, comment: '매도량' })
   quantity: number;
 
   @Column({ nullable: true, comment: '매도가' })

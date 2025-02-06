@@ -1,6 +1,6 @@
 import { Injectable, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, Repository } from 'typeorm';
+import { Equal, LessThan, LessThanOrEqual, Repository } from 'typeorm';
 import { TradeInput } from './dto/trade.dto';
 import { Trade, TradeType } from 'src/database/entity/trade.entity';
 import {
@@ -29,12 +29,21 @@ export class TradeService {
     const tradeType =
       input.type === TradeType.BUY ? TradeType.SELL : TradeType.BUY;
 
-    const orders = await this.tradeRepository.find({
-      where: { code: input.code, type: tradeType },
+    const ordersToBuy = await this.tradeRepository.find({
+      where: {
+        code: input.code,
+        type: tradeType,
+        price: LessThanOrEqual(input.price),
+      },
       order: { price: 'ASC', createdAt: 'ASC' },
     });
 
-    if (orders.length === 0) {
+    const ordersToSell = await this.tradeRepository.find({
+      where: { code: input.code, type: tradeType, price: Equal(input.price) },
+      order: { price: 'ASC', createdAt: 'ASC' },
+    });
+
+    if (ordersToBuy.length === 0 || ordersToSell.length === 0) {
       await this.tradeRepository.save({
         ...input,
         userId: user.id,
@@ -48,62 +57,98 @@ export class TradeService {
     }
 
     return tradeType === TradeType.BUY
-      ? this.buyStocks(orders, input, user)
-      : this.sellStocks(orders, input, user);
+      ? this.sellStocks(ordersToSell, input, user)
+      : this.buyStocks(ordersToBuy, input, user);
   }
 
   /** 매도 */
   private async sellStocks(sellOrders: Trade[], input: TradeInput, user: User) {
-    let remainingQuantity = input.quantity; // 남은 수량을 별도 변수로 관리
-
     for (let order of sellOrders) {
-      if (remainingQuantity <= 0) break; // 남은 수량이 없으면 거래 종료
-
-      if (remainingQuantity > order.quantity) {
-        // 매도 주문 수량 > 매수 주문 수량
-        remainingQuantity -= order.quantity;
-        await this.tradeRepository.delete(order.id); // 매수 주문 삭제
+      // 매도 수량 > 매수 수량
+      if (input.quantity > order.quantity) {
         await this.createTradeHistory({
-          ...input,
+          code: input.code,
+          price: order.price,
           type: TradeHistoryType.ALL_TRADE,
           quantity: order.quantity,
           seller: user.id,
           buyer: order.userId,
         });
-      } else {
-        // 매도 주문 수량 <= 매수 주문 수량
-        order.quantity -= remainingQuantity;
-        await this.tradeRepository.save(order); // 남은 수량 업데이트
-
+        input.quantity -= order.quantity; // input 값 남아있는 상태
+        await this.tradeRepository.delete(order.id); // 매수 주문 삭제
+      } else if (input.quantity < order.quantity) {
         await this.createTradeHistory({
-          ...input,
-          type:
-            remainingQuantity === order.quantity
-              ? TradeHistoryType.ALL_TRADE
-              : TradeHistoryType.SPLIT_TRADE,
-          quantity: remainingQuantity,
+          code: input.code,
+          price: order.price,
+          type: TradeHistoryType.SPLIT_TRADE,
+          quantity: input.quantity,
           seller: user.id,
           buyer: order.userId,
         });
+        order.quantity -= input.quantity;
+        input.quantity = 0;
+        await this.tradeRepository.save(order); // 매수 남은 수량 업데이트
+        // 매도 주문 수량 == 매수 주문 수량
+      } else if (input.quantity === order.quantity) {
+        await this.createTradeHistory({
+          code: input.code,
+          price: order.price,
+          type: TradeHistoryType.ALL_TRADE,
+          quantity: order.quantity,
+          seller: user.id,
+          buyer: order.userId,
+        });
+        input.quantity = 0;
+        await this.tradeRepository.delete(order.id); // 매수 주문 삭제
+      }
 
-        remainingQuantity = 0;
+      // input.quantity가 0이 되면 루프 종료
+      if (input.quantity === 0) {
+        break;
       }
     }
 
+    // 남은 주문이 있는 경우 남은 수량 저장
+    if (input.quantity > 0) {
+      await this.tradeRepository.save({
+        ...input,
+        userId: user.id,
+        user: user,
+      });
+    }
     return { isSuccess: true };
   }
 
   /** 매수 */
   private async buyStocks(buyOrders: Trade[], input: TradeInput, user: User) {
-    let remainingQuantity = input.quantity; // 남은 수량을 별도 변수로 관리
-
     for (let order of buyOrders) {
-      if (remainingQuantity <= 0) break; // 남은 수량이 없으면 거래 종료
-
-      if (remainingQuantity > order.quantity) {
-        // 매수 주문 수량 > 매도 주문 수량
-        remainingQuantity -= order.quantity;
+      // 매수 수량 > 매도 수량
+      if (input.quantity > order.quantity) {
+        await this.createTradeHistory({
+          code: input.code,
+          price: order.price,
+          type: TradeHistoryType.SPLIT_TRADE,
+          quantity: order.quantity,
+          seller: order.userId,
+          buyer: user.id,
+        });
+        input.quantity -= order.quantity;
         await this.tradeRepository.delete(order.id); // 매도 주문 삭제
+        // 매수 수량 < 매도 수량
+      } else if (input.quantity < order.quantity) {
+        await this.createTradeHistory({
+          code: input.code,
+          price: order.price,
+          type: TradeHistoryType.ALL_TRADE,
+          quantity: input.quantity,
+          seller: order.userId,
+          buyer: user.id,
+        });
+        order.quantity -= input.quantity;
+        input.quantity = 0;
+        await this.tradeRepository.save(order); // 매도 남은 수량 업데이트
+        // 매도 주문 수량 == 매수 주문 수량
+      } else if (input.quantity === order.quantity) {
         await this.createTradeHistory({
           ...input,
           price: order.price,
@@ -112,27 +157,24 @@ export class TradeService {
           seller: order.userId,
           buyer: user.id,
         });
-      } else {
-        // 매수 주문 수량 <= 매도 주문 수량
-        order.quantity -= remainingQuantity;
-        await this.tradeRepository.save(order); // 남은 수량 업데이트
+        input.quantity = 0;
+        await this.tradeRepository.delete(order.id); // 매도 주문 삭제
+      }
 
-        await this.createTradeHistory({
-          ...input,
-          price: order.price,
-          type:
-            remainingQuantity === order.quantity
-              ? TradeHistoryType.ALL_TRADE
-              : TradeHistoryType.SPLIT_TRADE,
-          quantity: remainingQuantity,
-          seller: order.userId,
-          buyer: user.id,
-        });
-
-        remainingQuantity = 0;
+      // input.quantity가 0이 되면 루프 종료
+      if (input.quantity === 0) {
+        break;
       }
     }
 
+    // 남은 주문이 있는 경우 남은 수량 저장
+    if (input.quantity > 0) {
+      await this.tradeRepository.save({
+        ...input,
+        userId: user.id,
+        user: user,
+      });
+    }
     return { isSuccess: true };
   }
 

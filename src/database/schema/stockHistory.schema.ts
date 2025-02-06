@@ -35,6 +35,7 @@ export class StockHistory extends BaseEntity {
   lowPrice: number;
 
   /** 거래량 */
+  @Prop()
   volume: number;
 
   // /** 전날 종가 대비 */
