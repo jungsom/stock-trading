@@ -12,6 +12,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { WinstonModule } from 'nest-winston';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { UserModule } from './user/user.module';
     CacheModule.register({
       isGlobal: true,
     }),
+    WinstonModule.forRoot({}),
     AuthModule,
     UserModule,
     StockModule,

@@ -1,12 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Stock } from 'src/database/entity/stock.entity';
-import { StockInput } from './dto/stock.dto';
-import {
-  StockHistory,
-  StockHistoryDocument,
-} from 'src/database/schema/stockHistory.schema';
+import { StockHistory } from 'src/database/schema/stockHistory.schema';
 import { Trade, TradeType } from 'src/database/entity/trade.entity';
 import { TradeInput } from 'src/trade/dto/trade.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -14,6 +10,8 @@ import { Model } from 'mongoose';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Cron } from '@nestjs/schedule';
+import { StockHistoryInput } from './dto/stock-history.dto';
+import { StockInput } from './dto/stock.dto';
 
 @Injectable()
 export class StockService {
@@ -21,7 +19,7 @@ export class StockService {
     @InjectRepository(Stock)
     private readonly stockRepository: Repository<Stock>,
     @InjectModel(StockHistory.name)
-    private readonly stockHistoryModel: Model<StockHistoryDocument>,
+    private readonly stockHistoryModel: Model<StockHistory>,
     @InjectRepository(Trade)
     private readonly tradeRepository: Repository<Trade>,
     @Inject(CACHE_MANAGER)
@@ -37,13 +35,20 @@ export class StockService {
       return cachedStock;
     }
 
-    const newStock = await this.stockHistoryModel
-      .findOne({
-        where: { code: input.code },
-      })
-      .sort({ createdAt: -1 });
+    const newStock = await this.stockRepository.findOne({
+      where: { code: input.code },
+    });
 
     await this.cacheManager.set(cacheKey, newStock);
+
+    return newStock;
+  }
+
+  /** 특정 주식 가격 조회 */
+  async getStockHistory(input: StockHistoryInput) {
+    const newStock = await this.stockHistoryModel
+      .findOne({ code: input.code })
+      .sort({ createdAt: -1 });
 
     return newStock;
   }
@@ -59,23 +64,28 @@ export class StockService {
     return stockHistory;
   }
 
-    // 매수 가격 > 매도 가격 일 시, 체크
-    async checkCurrentPrice(input: TradeInput) {
-      const lowestSellOrder = await this.tradeRepository.findOne({
-        where: { code: input.code, type: TradeType.SELL },
-        order: { price: 'ASC' },
-      });
+  // 매수 가격 > 매도 가격 일 시, 체크
+  async checkCurrentPrice(input: TradeInput) {
+    const lowestSellOrder = await this.tradeRepository.findOne({
+      where: { code: input.code, type: TradeType.SELL },
+      order: { price: 'ASC' },
+    });
 
-      const currentStockHistory = await this.stockHistoryModel.findOne({
+    const currentStockHistory = await this.stockHistoryModel
+      .findOne({
         code: input.code,
-      }).sort({ createdAt: -1 });
+      })
+      .sort({ createdAt: -1 });
 
-      if (lowestSellOrder && lowestSellOrder.price !== currentStockHistory.currentPrice) {
-        currentStockHistory.currentPrice = lowestSellOrder.price;
-        console.log('시장가가 변동되었습니다.');
-        await currentStockHistory.save();
-      }
+    if (
+      lowestSellOrder &&
+      lowestSellOrder.price !== currentStockHistory.currentPrice
+    ) {
+      currentStockHistory.currentPrice = lowestSellOrder.price;
+      console.log('시장가가 변동되었습니다.');
+      await currentStockHistory.save();
     }
+  }
 
   // renew storyHistory cycle: 1 minute
   @Cron('45 * * * * *', { timeZone: 'Asia/Seoul' })

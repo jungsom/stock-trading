@@ -33,7 +33,6 @@ export class TradeController {
     @AuthUser() user: User,
   ): Promise<onTradeStockOutput> {
     const result = await this.producerService.onTradeStock(input, user);
-    console.log('result', result);
     await this.stockService.checkCurrentPrice(input);
     await this.eventGateway.broadCastTrade(input);
     return result;

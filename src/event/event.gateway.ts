@@ -10,12 +10,17 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { StockHistory } from 'src/database/schema/stockHistory.schema';
+import { StockHistoryInput } from 'src/stock/dto/stock-history.dto';
 import { StockInput } from 'src/stock/dto/stock.dto';
 import { StockService } from 'src/stock/stock.service';
 import { onTradeStockInput } from 'src/trade/dto/on-trade-stock.dto';
 import { TradeService } from 'src/trade/trade.service';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  },
+})
 export class EventGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -42,25 +47,23 @@ export class EventGateway
   }
 
   // Listen Stock Info
-  @SubscribeMessage('subscribe-stock')
-  handleStockEvent(
-    @MessageBody() message: StockInput,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const stock = this.stockService.getStock(message);
-    // this.server.emit('stock', stock);
-    return stock;
-  }
-
-  // Listen Trade Info
-  @SubscribeMessage('subscribe-trade')
-  handleTradeEvent(
+  @SubscribeMessage('sent-stock')
+  async handleStockEvent(
     @MessageBody() message: onTradeStockInput,
     @ConnectedSocket() client: Socket,
   ) {
-    const trade = this.tradeService.getAllTrades(message);
-    // this.server.emit('trade', trade);
-    return trade;
+    const stock = await this.stockService.getStockHistory(message);
+    client.emit('stock', stock);
+  }
+
+  // Listen Trade Info
+  @SubscribeMessage('sent-trade')
+  async handleTradeEvent(
+    @MessageBody() message: onTradeStockInput,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const trade = await this.tradeService.getAllTrades(message);
+    client.emit('trade', trade);
   }
 
   // Initialize WebSocket Server
