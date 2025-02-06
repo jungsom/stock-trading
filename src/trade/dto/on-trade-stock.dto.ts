@@ -1,7 +1,7 @@
-import { BaseEntity } from 'src/database/entity/base.entity';
+import { BaseOutput } from 'src/common/dto/base.dto';
 import { TradeType } from 'src/database/entity/trade.entity';
 
-export class onTradeStockInput extends BaseEntity {
+export class onTradeStockInput {
   code?: string;
 
   quantity?: number;
@@ -11,7 +11,7 @@ export class onTradeStockInput extends BaseEntity {
   type?: TradeType;
 }
 
-export class onTradeStockOutput {
+export class onTradeStockOutput extends BaseOutput {
   isSuccess?: boolean;
   message?: string;
 }

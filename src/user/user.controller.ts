@@ -1,20 +1,36 @@
 import { UserInput, UserOutPut } from './dto/user.dto';
 import { AuthService } from 'src/auth/auth.service';
-import { Body, Controller, Logger, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Inject,
+  Logger,
+  LoggerService,
+  Post,
+  Res,
+} from '@nestjs/common';
 import { uuid } from 'src/common/uuid';
 import { UserService } from './user.service';
 import { Response } from 'express';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { User } from 'src/database/entity/user.entity';
 
 @Controller('user')
 export class UserController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    private readonly logger: Logger,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
   ) {}
 
+  /**
+   * @function signup
+   * @param {UserInput} input
+   * @return {Promise<UserOutPut>}
+   */
   @Post('signup')
-  async signup(@Body() input: UserInput) {
+  async signup(@Body() input: UserInput): Promise<UserOutPut> {
     const transaction_id = uuid();
     try {
       this.logger.log({
@@ -23,7 +39,9 @@ export class UserController {
       });
 
       await this.userService.validateSignupUser(input);
-      return await this.userService.createUser(input);
+      await this.userService.createUser(input);
+
+      return { isSuccessful: true };
     } catch (e) {
       this.logger.error({
         message: `[${transaction_id}] fail `,
@@ -44,8 +62,16 @@ export class UserController {
     }
   }
 
+  /**
+   * @function login
+   * @param {UserInput} input
+   * @return {Promise<UserOutPut>}
+   */
   @Post('login')
-  async login(@Body() input: UserInput, @Res() res: Response) {
+  async login(
+    @Body() input: UserInput,
+    @Res() res: Response,
+  ): Promise<UserOutPut> {
     const transaction_id = uuid();
     try {
       this.logger.log({
@@ -63,7 +89,8 @@ export class UserController {
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
       });
-      return res.status(200).json({ user });
+
+      res.json({ isSuccessful: true });
     } catch (e) {
       this.logger.error({
         message: `[${transaction_id}] fail `,

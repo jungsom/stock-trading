@@ -1,3 +1,4 @@
+import { BaseOutput } from 'src/common/dto/base.dto';
 import { TradeType } from 'src/database/entity/trade.entity';
 
 export class TradeInput {
@@ -10,16 +11,16 @@ export class TradeInput {
   type?: TradeType;
 }
 
-export class TradeOutput {
-  quantity: number;
+export class TradeOutput extends BaseOutput {
+  quantity?: number;
 
-  price: number;
+  price?: number;
 
-  code: string;
+  code?: string;
 
-  type: TradeType;
+  type?: TradeType;
 
-  createdAt: Date;
+  createdAt?: Date;
 
-  updatedAt: Date;
+  updatedAt?: Date;
 }

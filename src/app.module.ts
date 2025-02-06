@@ -13,6 +13,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
 
 @Module({
   imports: [
@@ -55,7 +56,20 @@ import { WinstonModule } from 'nest-winston';
     CacheModule.register({
       isGlobal: true,
     }),
-    WinstonModule.forRoot({}),
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.simple(),
+          ),
+        }),
+        new winston.transports.File({
+          filename: './logs/app.log',
+          format: winston.format.simple(),
+        }),
+      ],
+    }),
     AuthModule,
     UserModule,
     StockModule,

@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Stock } from 'src/database/entity/stock.entity';
 import { StockService } from './stock.service';
@@ -20,7 +20,7 @@ import { AuthModule } from 'src/auth/auth.module';
     AuthModule,
   ],
 
-  providers: [StockService, Logger],
+  providers: [StockService],
   controllers: [StockController],
   exports: [StockService],
 })

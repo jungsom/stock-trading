@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/database/entity/user.entity';
 import { Repository } from 'typeorm';
-import { UserInput } from 'src/user/dto/user.dto';
+import { UserInput, UserOutPut } from 'src/user/dto/user.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -12,6 +12,7 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
+  /** 사용자 회원가입 */
   async createUser(input: UserInput) {
     const hashedPassword = await bcrypt.hash(input.password, 10);
 
@@ -20,10 +21,12 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
+  /** 사용자 정보 조회 */
   async selectUser(id: number) {
     return await this.userRepository.findOne({ where: { id } });
   }
 
+  /** 사용자 회원가입 정보 확인 */
   async validateSignupUser(input: UserInput) {
     const user = await this.userRepository.findOne({
       where: { email: input.email },
@@ -38,7 +41,7 @@ export class UserService {
   }
 
   /** 사용자 로그인 정보 확인 */
-  async validateLoginUser(input: UserInput): Promise<User> {
+  async validateLoginUser(input: UserInput) {
     const user = await this.userRepository.findOne({
       where: { email: input.email },
     });

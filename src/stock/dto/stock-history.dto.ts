@@ -1,8 +1,10 @@
+import { BaseOutput } from "src/common/dto/base.dto";
+
 export class StockHistoryInput {
   code?: string;
 }
 
-export class StockHistoryOutput {
+export class StockHistoryOutput extends BaseOutput {
   code?: string;
 
   date?: Date;

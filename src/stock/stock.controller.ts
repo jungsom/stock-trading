@@ -1,10 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Inject,
-  LoggerService,
-} from '@nestjs/common';
+import { Body, Controller, Get, Inject, LoggerService } from '@nestjs/common';
 import { StockService } from './stock.service';
 import { StockInput, StockOutput } from './dto/stock.dto';
 import { StockHistoryInput, StockHistoryOutput } from './dto/stock-history.dto';
@@ -30,14 +24,14 @@ export class StockController {
     try {
       this.logger.log({
         message: `[${transaction_id}] start `,
-        context: `${StockController.name} signup `,
+        context: `${StockController.name} getStock `,
       });
 
       return await this.stockService.getStock(input);
     } catch (e) {
       this.logger.error({
         message: `[${transaction_id}] fail `,
-        context: `${StockController.name} signup `,
+        context: `${StockController.name} getStock `,
         error: e,
       });
       return {
@@ -49,7 +43,7 @@ export class StockController {
     } finally {
       this.logger.log({
         message: `[${transaction_id}] end `,
-        context: `${StockController.name} signup `,
+        context: `${StockController.name} getStock `,
       });
     }
   }
@@ -63,6 +57,31 @@ export class StockController {
   async getStockPrice(
     @Body() input: StockHistoryInput,
   ): Promise<StockHistoryOutput> {
-    return await this.stockService.getStockHistory(input);
+    const transaction_id = uuid();
+    try {
+      this.logger.log({
+        message: `[${transaction_id}] start `,
+        context: `${StockController.name} getStockPrice `,
+      });
+
+      return await this.stockService.getStockHistory(input);
+    } catch (e) {
+      this.logger.error({
+        message: `[${transaction_id}] fail `,
+        context: `${StockController.name} getStockPrice `,
+        error: e,
+      });
+      return {
+        error: {
+          code: e.status,
+          message: e.message,
+        },
+      };
+    } finally {
+      this.logger.log({
+        message: `[${transaction_id}] end `,
+        context: `${StockController.name} getStockPrice `,
+      });
+    }
   }
 }

@@ -9,9 +9,5 @@ export class UserInput {
 }
 
 export class UserOutPut extends BaseOutput {
-  id?: number;
-
-  email?: string;
-
-  name?: string;
+  isSuccessful?: boolean;
 }
