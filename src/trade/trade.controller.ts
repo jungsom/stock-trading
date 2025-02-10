@@ -54,7 +54,7 @@ export class TradeController {
 
       const result = await this.producerService.onTradeStock(input, user);
 
-      await this.stockService.checkCurrentPrice(input);
+      // const currentPrice = await this.stockService.checkCurrentPrice(input);
       // await this.stockService.checkHighLowPrice(input);
 
       await this.eventGateway.broadCastTrade(input);
@@ -69,7 +69,7 @@ export class TradeController {
       return {
         error: {
           code: e.status,
-          message: e.message,
+          message: e.message
         },
       };
     } finally {

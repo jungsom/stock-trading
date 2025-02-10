@@ -5,6 +5,7 @@ import { TradeHistory } from '../database/entity/tradeHistory.entity';
 import { Stock } from '../database/entity/stock.entity';
 import { DataSource } from 'typeorm';
 import { User } from '../database/entity/user.entity';
+import bcrypt from 'bcrypt';
 
 require('dotenv').config();
 
@@ -25,33 +26,18 @@ const stockRepository = AppDataSource.getRepository(Stock);
 const userRepository = AppDataSource.getRepository(User);
 
 const onInitStock = async () => {
-  await stockRepository.save({
-    code: '005930',
-    name: '삼성전자',
-    index: '코스피',
-    category: '전기/전자',
-  });
-  await stockRepository.save({
-    code: '000660',
-    name: 'SK하이닉스',
-    index: '코스피',
-    category: '전기/전자',
-  });
-  await stockRepository.save({
-    code: '066570',
-    name: 'LG전자',
-    index: '코스피',
-    category: '전기/전자',
-  });
+  await stockRepository.save({ code: '005930', name: '삼성전자', index: '코스피', category: '전기/전자' });
+  await stockRepository.save({ code: '000660', name: 'SK하이닉스', index: '코스피', category: '전기/전자'});
+  await stockRepository.save({ code: '066570', name: 'LG전자', index: '코스피', category: '전기/전자'});
 };
 
 const onInitUser = async () => {
-  await userRepository.save({
-    email: 'test@naver.com',
-    name: 'test',
-    password: '1234',
-  });
+  const password = await bcrypt.hash('1234', 10);
+  await userRepository.save({ email: 'cat@naver.com', name: 'cat', password: password });
+  await userRepository.save({ email: 'dog@gmail.com', name: 'dog', password: password });
+  await userRepository.save({ email: 'tiger@kakao.com', name: 'tiger', password: password });
 };
+
 
 const onStart = async () => {
   await onInitStock();

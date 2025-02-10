@@ -15,6 +15,8 @@ import { ProducerModule } from 'src/producer/producer.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User } from 'src/database/entity/user.entity';
 import { AuthModule } from 'src/auth/auth.module';
+import { StockService } from 'src/stock/stock.service';
+import { StockModule } from 'src/stock/stock.module';
 
 @Module({
   imports: [
@@ -28,8 +30,9 @@ import { AuthModule } from 'src/auth/auth.module';
     TradeModule,
     ProducerModule,
     AuthModule,
+    StockModule
   ],
-  providers: [TradeConsumer, TradeService, Logger],
+  providers: [TradeConsumer, TradeService, StockService, Logger],
   exports: [],
 })
 export class ConsumerModule {}
