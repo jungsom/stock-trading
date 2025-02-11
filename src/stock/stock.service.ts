@@ -29,6 +29,26 @@ export class StockService {
     private readonly cacheManager: Cache,
   ) {}
 
+  /** 전체 주식 정보 조회 */
+  async getAllStocks() {
+    const stocks = await this.stockRepository.find();
+    const result = await Promise.all(
+      stocks.map(async (stock) => {
+        const latestHistory = await this.stockHistoryModel
+          .findOne({ code: stock.code })
+          .sort({ createdAt: -1 });
+
+        return {
+          ...stock,
+          latestHistory,
+        };
+      }), 
+    )
+    console.log(result);
+
+    return result;
+  }
+
   /** 특정 주식 정보 조회 */
   async getStock(input: StockInput) {
     const cacheKey = `stock_${input.code}`; // 주식 코드별 KEY

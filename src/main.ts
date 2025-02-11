@@ -16,6 +16,9 @@ async function bootstrap() {
     }),
   );
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.enableCors({
+    origin: 'http://localhost:5173',
+  })
   await app.listen(process.env.PORT ?? 3000);
   app.useWebSocketAdapter(new WsAdapter(app));
 

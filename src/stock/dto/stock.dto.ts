@@ -12,4 +12,6 @@ export class StockOutput extends BaseOutput {
   name?: string;
 
   index?: string;
+
+  latestHistory?: {}
 }
