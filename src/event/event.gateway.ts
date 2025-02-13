@@ -18,6 +18,7 @@ import { TradeService } from 'src/trade/trade.service';
   cors: {
     origin: '*',
   },
+  transports: ['websocket', 'polling'],
 })
 export class EventGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -50,6 +51,8 @@ export class EventGateway
     @MessageBody() message: any,
     @ConnectedSocket() client: Socket,
   ) {
+    console.log('📩 [sent-stock] 이벤트 감지됨!');
+    console.log('📨 받은 메시지:', message);
     const stock = await this.stockService.getStockHistory(message);
     client.emit('stock', stock);
   }
@@ -57,9 +60,11 @@ export class EventGateway
   // Listen Trade Info
   @SubscribeMessage('sent-trade')
   async handleTradeEvent(
-    @MessageBody() message: any ,
+    @MessageBody() message: any,
     @ConnectedSocket() client: Socket,
   ) {
+    console.log('📩 [sent-trade] 이벤트 감지됨!');
+    console.log('📨 받은 메시지:', message);
     const trade = await this.tradeService.getAllTrades(message);
     client.emit('trade', trade);
   }

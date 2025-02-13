@@ -4,6 +4,7 @@ import { WsAdapter } from '@nestjs/platform-ws';
 import cookieParser from 'cookie-parser';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ValidationPipe } from '@nestjs/common';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 declare const module: any;
 
@@ -15,12 +16,12 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.enableCors({
     origin: 'http://localhost:5173',
-  })
+  });
+  app.useWebSocketAdapter(new IoAdapter(app));
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   await app.listen(process.env.PORT ?? 3000);
-  app.useWebSocketAdapter(new WsAdapter(app));
 
   if (module.hot) {
     module.hot.accept();
