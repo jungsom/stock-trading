@@ -54,7 +54,8 @@ export class EventGateway
     console.log('📩 [sent-stock] 이벤트 감지됨!');
     console.log('📨 받은 메시지:', message);
     const stock = await this.stockService.getStockHistory(message);
-    client.emit('stock', stock);
+    console.log('📨 보낼 메시지:', stock);
+    this.server.emit('stock', stock);
   }
 
   // Listen Trade Info
@@ -66,7 +67,8 @@ export class EventGateway
     console.log('📩 [sent-trade] 이벤트 감지됨!');
     console.log('📨 받은 메시지:', message);
     const trade = await this.tradeService.getAllTrades(message);
-    client.emit('trade', trade);
+    console.log('📨 보낼 메시지:', trade);
+    this.server.emit('trade', trade);
   }
 
   // Initialize WebSocket Server

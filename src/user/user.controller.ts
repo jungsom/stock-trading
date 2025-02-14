@@ -13,7 +13,6 @@ import { uuid } from 'src/common/uuid';
 import { UserService } from './user.service';
 import { Response } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { User } from 'src/database/entity/user.entity';
 
 @Controller('user')
 export class UserController {
@@ -71,7 +70,7 @@ export class UserController {
   async login(
     @Body() input: UserInput,
     @Res() res: Response,
-  ): Promise<UserOutPut> {
+  ): Promise<void> {
     const transaction_id = uuid();
     try {
       this.logger.log({
@@ -97,12 +96,12 @@ export class UserController {
         context: `${UserController.name} login `,
         error: e,
       });
-      return {
+      res.status(e.status || 500).json({
         error: {
           code: e.status,
           message: e.message,
         },
-      };
+      });
     } finally {
       this.logger.log({
         message: `[${transaction_id}] end `,

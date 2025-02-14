@@ -44,7 +44,6 @@ export class StockService {
         };
       }), 
     )
-    console.log(result);
 
     return result;
   }

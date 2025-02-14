@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ValidationPipe } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import e from 'express';
 
 declare const module: any;
 
@@ -17,7 +18,10 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: true,
+    credentials: true,
+    exposedHeaders: ['Authorization', 'Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
+    allowedHeaders: ['Authorization', 'Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
   });
   app.useWebSocketAdapter(new IoAdapter(app));
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
