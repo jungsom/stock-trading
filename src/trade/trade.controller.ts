@@ -4,6 +4,7 @@ import {
   Get,
   Inject,
   LoggerService,
+  Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -69,7 +70,7 @@ export class TradeController {
       return {
         error: {
           code: e.status,
-          message: e.message
+          message: e.message,
         },
       };
     } finally {
@@ -85,11 +86,12 @@ export class TradeController {
    * @param {TradeInput} input
    * @return {Promise<TradeOutput[]>}
    */
-  @Get()
+  @Get(':code')
   async getAllTrades(
-    @Body() input: TradeInput,
+    @Param('code') code: string,
   ): Promise<TradeOutput[] | BaseOutput> {
     const transaction_id = uuid();
+    const input: TradeOutput = { code };
     try {
       this.logger.log({
         message: `[${transaction_id}] start `,
