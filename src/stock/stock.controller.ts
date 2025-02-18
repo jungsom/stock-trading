@@ -128,4 +128,42 @@ export class StockController {
       });
     }
   }
+
+  /**
+   * @function getAllStockPrices
+   * @param {StockHistoryInput} input
+   * @return {Promise<StockHistoryOutput>}
+   */
+  @Get('price/all/:code')
+  async getAllStockPrices(
+    @Param('code') code: string,
+  ): Promise<StockHistoryOutput[] | BaseOutput> {
+    const transaction_id = uuid();
+    const input: StockHistoryInput = { code };
+    try {
+      this.logger.log({
+        message: `[${transaction_id}] start `,
+        context: `${StockController.name} getAllStockPrices `,
+      });
+
+      return await this.stockService.getAllStockHistory(input);
+    } catch (e) {
+      this.logger.error({
+        message: `[${transaction_id}] fail `,
+        context: `${StockController.name} getAllStockPrices `,
+        error: e,
+      });
+      return {
+        error: {
+          code: e.status,
+          message: e.message,
+        },
+      };
+    } finally {
+      this.logger.log({
+        message: `[${transaction_id}] end `,
+        context: `${StockController.name} getAllStockPrices `,
+      });
+    }
+  }
 }

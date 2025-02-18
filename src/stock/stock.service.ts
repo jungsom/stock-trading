@@ -75,6 +75,13 @@ export class StockService {
     return newStock;
   }
 
+  /** 전체 주식 가격 조회 */
+  async getAllStockHistory(input: StockHistoryInput) {
+    const newStock = await this.stockHistoryModel.find().sort({ createdAt: -1 });
+
+    return newStock;
+  }
+
   /** 현재 매도 호가에 따른 거래량 조회 */
   async getStockState(input: TradeInput) {
     const stockHistory = await this.tradeRepository

@@ -23,6 +23,7 @@ import { User } from 'src/database/entity/user.entity';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { uuid } from 'src/common/uuid';
 import { BaseOutput } from 'src/common/dto/base.dto';
+import { TradeHistoryOutput } from './dto/trade-history.dto';
 
 @Controller('trade')
 export class TradeController {
@@ -117,6 +118,46 @@ export class TradeController {
       this.logger.log({
         message: `[${transaction_id}] end `,
         context: `${TradeController.name} getAllTrades `,
+      });
+    }
+  }
+
+  /**
+   * @function getTradeHistory
+   * @param {TradeInput} input
+   * @return {Promise<TradeHistoryOutput[]>}
+   */
+  @Get('history/:code')
+  async getTradeHistory(
+    @Param('code') code: string,
+  ): Promise<TradeHistoryOutput[] | BaseOutput> {
+    const transaction_id = uuid();
+    const input: TradeOutput = { code };
+    try {
+      this.logger.log({
+        message: `[${transaction_id}] start `,
+        context: `${TradeController.name} getTradeHistory `,
+      });
+
+      const result = this.tradeService.getTradeHistory(input);
+
+      return result;
+    } catch (e) {
+      this.logger.error({
+        message: `[${transaction_id}] fail `,
+        context: `${TradeController.name} getTradeHistory `,
+        error: e,
+      });
+      return {
+        error: {
+          code: e.status,
+          message: e.message,
+        },
+      };
+    } finally {
+      this.logger.log({
+        message: `[${transaction_id}] end `,
+        context: `${TradeController.name} getTradeHistory `,
       });
     }
   }

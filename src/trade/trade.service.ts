@@ -24,6 +24,13 @@ export class TradeService {
     return await this.tradeRepository.find({ where: { code: input.code } });
   }
 
+  /** 거래 체결 내역 조회 */
+  async getTradeHistory(input: TradeInput) {
+    return await this.tradeHistoryRepository.find({
+      where: { code: input.code },
+    });
+  }
+
   /** 시장가 주문 체결 및 예약 */
   async tradeStock(input: TradeInput, user: User) {
     const tradeType =
