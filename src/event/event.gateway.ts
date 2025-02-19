@@ -66,7 +66,8 @@ export class EventGateway
   ) {
     console.log('📩 [sent-trade] 이벤트 감지됨!');
     console.log('📨 받은 메시지:', message);
-    const trade = await this.tradeService.getAllTrades(message);
+    const input = { code: message };
+    const trade = await this.tradeService.getAllTrades(input);
     console.log('📨 보낼 메시지:', trade);
     this.server.emit('trade', trade);
   }
