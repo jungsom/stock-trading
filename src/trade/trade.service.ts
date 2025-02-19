@@ -26,8 +26,20 @@ export class TradeService {
 
   /** 전체 호가 조회 */
   async getAllTrades(input: TradeInput) {
-    return await this.tradeRepository.find({ where: { code: input.code } });
+    const trades = await this.tradeRepository
+    .createQueryBuilder('trade')
+    .select('trade.price', 'price')
+    .addSelect('trade.type', 'type')
+    .addSelect('SUM(trade.quantity)', 'totalQuantity')
+    .where('trade.code = :code', { code: input.code })
+    .groupBy('trade.price')
+    .addGroupBy('trade.type')
+    .orderBy('trade.price', 'DESC') 
+    .getRawMany();
+     
+    return trades;
   }
+
 
   /** 거래 체결 내역 조회 */
   async getTradeHistory(input: TradeInput) {
