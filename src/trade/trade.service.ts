@@ -19,6 +19,11 @@ export class TradeService {
     private readonly tradeHistoryRepository: Repository<TradeHistory>,
   ) {}
 
+  /**  */
+  async getTrade(input: TradeInput) {
+  
+  }
+
   /** 전체 호가 조회 */
   async getAllTrades(input: TradeInput) {
     return await this.tradeRepository.find({ where: { code: input.code } });

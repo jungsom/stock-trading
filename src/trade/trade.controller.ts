@@ -59,7 +59,9 @@ export class TradeController {
       // const currentPrice = await this.stockService.checkCurrentPrice(input);
       // await this.stockService.checkHighLowPrice(input);
 
+      const stocks = await this.stockService.getStockHistory(input);
       await this.eventGateway.broadCastTrade(input);
+      await this.eventGateway.broadCastStock(stocks);
 
       return result;
     } catch (e) {

@@ -77,7 +77,7 @@ export class StockService {
 
   /** 전체 주식 가격 조회 */
   async getAllStockHistory(input: StockHistoryInput) {
-    const newStock = await this.stockHistoryModel.find().sort({ createdAt: -1 });
+    const newStock = await this.stockHistoryModel.find().sort({ createdAt: -1 }).limit(100);
 
     return newStock;
   }
