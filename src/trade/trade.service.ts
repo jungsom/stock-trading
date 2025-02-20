@@ -25,9 +25,6 @@ export class TradeService {
     private readonly tradeHistoryRepository: Repository<TradeHistory>,
   ) {}
 
-  /**  */
-  async getTrade(input: TradeInput) {}
-
   /** 전체 호가 조회 */
   async getAllTrades(input: TradeInput) {
     const trades = await this.tradeRepository
@@ -44,17 +41,25 @@ export class TradeService {
     return trades;
   }
 
-  /** 거래 체결 내역 조회 */
+  /** 전체 체결 내역 조회 */
   async getTradeHistory(input: TradeInput) {
     return await this.tradeHistoryRepository.find({
       where: { code: input.code },
     });
   }
 
-  /** 시장가 주문 체결 및 예약 */
+  /** 최종 주문 체결 */
   async tradeStock(input: TradeInput, user: User) {
     const tradeType =
       input.type === TradeType.BUY ? TradeType.SELL : TradeType.BUY;
+
+    const EqualPriceOrders = await this.tradeRepository.find({
+      where: {
+        code: input.code,
+        price: Equal(input.price),
+      },
+      order: { createdAt: 'ASC' },
+    });
 
     const ordersToBuy = await this.tradeRepository.find({
       where: {
@@ -74,14 +79,8 @@ export class TradeService {
       order: { price: 'ASC', createdAt: 'ASC' },
     });
 
-    return tradeType === TradeType.BUY
-      ? this.sellStocks(ordersToSell, input, user)
-      : this.buyStocks(ordersToBuy, input, user);
-  }
-
-  /** 매도 */
-  private async sellStocks(sellOrders: Trade[], input: TradeInput, user: User) {
-    if (sellOrders.length === 0) {
+    // 체결할 주문이 없을 시,
+    if (ordersToSell.length === 0 || ordersToBuy.length === 0) {
       await this.tradeRepository.save({
         ...input,
         userId: user.id,
@@ -93,6 +92,38 @@ export class TradeService {
       };
     }
 
+    // 체결할 주문 중 같은 가격이 있을 시,
+    if (EqualPriceOrders.length > 0) {
+      tradeType === TradeType.BUY
+        ? await this.sellStocks(EqualPriceOrders, input, user)
+        : await this.buyStocks(EqualPriceOrders, input, user);
+    }
+
+    if (input.quantity === 0) {
+      return {
+        isSuccess: true,
+        message: '동일 가격으로 체결이 완료되었습니다.',
+      };
+    }
+
+    // 체결할 주문 중 다른 가격이 있을 시,
+    tradeType === TradeType.BUY
+      ? await this.sellStocks(ordersToSell, input, user)
+      : await this.buyStocks(ordersToBuy, input, user);
+
+    if (input.quantity > 0) {
+      await this.tradeRepository.save({
+        ...input,
+        userId: user.id,
+        user: user,
+      });
+    }
+
+    return { isSuccess: true };
+  }
+
+  /** 매도 */
+  private async sellStocks(sellOrders: Trade[], input: TradeInput, user: User) {
     for (let order of sellOrders) {
       // 매도 수량 > 매수 수량
       if (input.quantity > order.quantity) {
@@ -137,32 +168,11 @@ export class TradeService {
         break;
       }
     }
-
-    // 남은 주문이 있는 경우 남은 수량 저장
-    if (input.quantity > 0) {
-      await this.tradeRepository.save({
-        ...input,
-        userId: user.id,
-        user: user,
-      });
-    }
-    return { isSuccess: true };
+    return input;
   }
 
   /** 매수 */
   private async buyStocks(buyOrders: Trade[], input: TradeInput, user: User) {
-    if (buyOrders.length === 0) {
-      await this.tradeRepository.save({
-        ...input,
-        userId: user.id,
-        user: user,
-      });
-      return {
-        isSuccess: true,
-        message: '체결할 주문이 없습니다. 잔여 매수 주문이 완료되었습니다.',
-      };
-    }
-
     for (let order of buyOrders) {
       // 매수 수량 > 매도 수량
       if (input.quantity > order.quantity) {
@@ -209,18 +219,10 @@ export class TradeService {
       }
     }
 
-    // 남은 주문이 있는 경우 남은 수량 저장
-    if (input.quantity > 0) {
-      await this.tradeRepository.save({
-        ...input,
-        userId: user.id,
-        user: user,
-      });
-    }
-    return { isSuccess: true };
+    return input;
   }
 
-  /** 거래 내역 생성 */
+  /** 체결 내역 생성 */
   private async createTradeHistory(input: TradeHistoryInput) {
     const tradeHistory = this.tradeHistoryRepository.create({
       code: input.code,
@@ -232,15 +234,5 @@ export class TradeService {
     });
 
     await this.tradeHistoryRepository.save(tradeHistory);
-  }
-
-  async checkMaxBuyPrice(input: TradeInput) {
-    const result = await this.tradeRepository.find({
-      where: {
-        code: input.code,
-        type: TradeType.BUY,
-        price: LessThan(input.price),
-      },
-    });
   }
 }

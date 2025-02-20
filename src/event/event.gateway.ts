@@ -45,6 +45,12 @@ export class EventGateway
     this.server.emit('trade', result);
   }
 
+  // send Trade History Info
+  async broadCastTradeHistory(trade: onTradeStockInput) {
+    const result = await this.tradeService.getTradeHistory(trade);
+    this.server.emit('trade-history', result);
+  }
+
   // Listen Stock Info
   @SubscribeMessage('sent-stock')
   async handleStockEvent(
@@ -70,6 +76,20 @@ export class EventGateway
     const trade = await this.tradeService.getAllTrades(input);
     console.log('📨 보낼 메시지:', trade);
     this.server.emit('trade', trade);
+  }
+
+  // Listen Trade History Info
+  @SubscribeMessage('sent-trade-history')
+  async handleTradeHistoryEvent(
+    @MessageBody() message: any,
+    @ConnectedSocket() client: Socket,
+  ) {
+    console.log('📩 [sent-trade-history] 이벤트 감지됨!');
+    console.log('📨 받은 메시지:', message);
+    const input = { code: message };
+    const trade = await this.tradeService.getTradeHistory(input);
+    console.log('📨 보낼 메시지:', trade);
+    this.server.emit('trade-history', trade);
   }
 
   // Initialize WebSocket Server
