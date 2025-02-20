@@ -18,17 +18,17 @@ export class TradeHistoryInput {
 }
 
 export class TradeHistoryOutput {
-  quantity: number;
+  quantity?: number;
 
-  price: number;
+  price?: number;
 
-  code: string;
+  code?: string;
 
-  type: TradeHistoryType;
+  type?: TradeHistoryType;
 
-  seller: number;
+  seller?: number;
 
-  buyer: number;
+  buyer?: number;
 
-  createdAt: Date;
+  createdAt?: Date;
 }

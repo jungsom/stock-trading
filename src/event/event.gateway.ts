@@ -9,6 +9,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { TradeHistory } from 'src/database/entity/tradeHistory.entity';
 import { StockHistory } from 'src/database/schema/stockHistory.schema';
 import { StockService } from 'src/stock/stock.service';
 import { onTradeStockInput } from 'src/trade/dto/on-trade-stock.dto';
@@ -47,7 +48,7 @@ export class EventGateway
 
   // send Trade History Info
   async broadCastTradeHistory(trade: onTradeStockInput) {
-    const result = await this.tradeService.getTradeHistory(trade);
+    const result = await this.tradeService.getAllTradeHistorys(trade);
     this.server.emit('trade-history', result);
   }
 
@@ -87,7 +88,7 @@ export class EventGateway
     console.log('📩 [sent-trade-history] 이벤트 감지됨!');
     console.log('📨 받은 메시지:', message);
     const input = { code: message };
-    const trade = await this.tradeService.getTradeHistory(input);
+    const trade = await this.tradeService.getAllTradeHistorys(input);
     console.log('📨 보낼 메시지:', trade);
     this.server.emit('trade-history', trade);
   }

@@ -42,11 +42,27 @@ export class TradeService {
   }
 
   /** 전체 체결 내역 조회 */
-  async getTradeHistory(input: TradeInput) {
+  async getAllTradeHistorys(input: TradeInput) {
     return await this.tradeHistoryRepository.find({
       where: { code: input.code },
     });
   }
+
+  /** 사용자 체결 내역 조회 */
+  async getTradeHistoryBySeller(user: User) {
+    console.log(user.id)
+    return await this.tradeHistoryRepository.find({
+      where: [{ buyer: user.id }, { seller: user.id }],
+    });
+  }
+
+    /** 사용자 체결 내역 조회 */
+    async getTradeHistoryByBuyer(user: User) {
+      console.log(user.id)
+      return await this.tradeHistoryRepository.find({
+        where: [{ buyer: user.id }, { seller: user.id }],
+      });
+    }
 
   /** 최종 주문 체결 */
   async tradeStock(input: TradeInput, user: User) {

@@ -6,6 +6,7 @@ import {
   LoggerService,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { TradeService } from './trade.service';
@@ -24,6 +25,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { uuid } from 'src/common/uuid';
 import { BaseOutput } from 'src/common/dto/base.dto';
 import { TradeHistoryOutput } from './dto/trade-history.dto';
+import { TradeType } from 'src/database/entity/trade.entity';
 
 @Controller('trade')
 export class TradeController {
@@ -40,6 +42,7 @@ export class TradeController {
    * @function tradeStock
    * @param {onTradeStockInput} input
    * @return {Promise<onTradeStockOutput>}
+   * @description 주식 매매
    */
   @UseGuards(AuthGuard)
   @Post()
@@ -89,8 +92,9 @@ export class TradeController {
    * @function getAllTrades
    * @param {TradeInput} input
    * @return {Promise<TradeOutput[]>}
+   * @description 전체 호가 조회
    */
-  @Get(':code')
+  @Get('/order/:code')
   async getAllTrades(
     @Param('code') code: string,
   ): Promise<TradeOutput[] | BaseOutput> {
@@ -129,20 +133,21 @@ export class TradeController {
    * @function getTradeHistory
    * @param {TradeInput} input
    * @return {Promise<TradeHistoryOutput[]>}
+   * @description 전체 체결 내역 조회
    */
   @Get('history/:code')
-  async getTradeHistory(
+  async getAllTradeHistorys(
     @Param('code') code: string,
   ): Promise<TradeHistoryOutput[] | BaseOutput> {
     const transaction_id = uuid();
-    const input: TradeOutput = { code };
+    const input: TradeInput = { code };
     try {
       this.logger.log({
         message: `[${transaction_id}] start `,
         context: `${TradeController.name} getTradeHistory `,
       });
 
-      const result = this.tradeService.getTradeHistory(input);
+      const result = this.tradeService.getAllTradeHistorys(input);
 
       return result;
     } catch (e) {
@@ -161,6 +166,53 @@ export class TradeController {
       this.logger.log({
         message: `[${transaction_id}] end `,
         context: `${TradeController.name} getTradeHistory `,
+      });
+    }
+  }
+
+  /**
+   * @function getTradeHistory
+   * @param {TradeInput} input
+   * @return {Promise<TradeHistoryOutput[]>}
+   * @description 사용자 체결 내역 조회
+   */
+  @Get('my/history')
+  @UseGuards(AuthGuard)
+  async getTradeHistoryByUser(
+    @AuthUser() user: User,
+    @Query('type') type: TradeType,
+  ): Promise<TradeHistoryOutput[] | BaseOutput> {
+    const transaction_id = uuid();
+    try {
+      this.logger.log({
+        message: `[${transaction_id}] start `,
+        context: `${TradeController.name} getTradeHistoryByUser `,
+      });
+
+      if (type === TradeType.BUY) {
+        return this.tradeService.getTradeHistoryBySeller(user);
+      } else if (type === TradeType.SELL) {
+        return this.tradeService.getTradeHistoryByBuyer(user);
+      } else {
+        throw new Error('주문 유형을 확인해주세요.');
+      }
+
+    } catch (e) {
+      this.logger.error({
+        message: `[${transaction_id}] fail `,
+        context: `${TradeController.name} getTradeHistoryByUser `,
+        error: e,
+      });
+      return {
+        error: {
+          code: e.status,
+          message: e.message,
+        },
+      };
+    } finally {
+      this.logger.log({
+        message: `[${transaction_id}] end `,
+        context: `${TradeController.name} getTradeHistoryByUser `,
       });
     }
   }
