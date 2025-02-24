@@ -48,21 +48,23 @@ export class TradeService {
     });
   }
 
-  /** 사용자 체결 내역 조회 */
+  /** 판매자 체결 내역 조회 */
   async getTradeHistoryBySeller(user: User) {
-    console.log(user.id)
+    console.log(user.id);
     return await this.tradeHistoryRepository.find({
       where: [{ buyer: user.id }, { seller: user.id }],
+      order: { createdAt: 'DESC' },
     });
   }
 
-    /** 사용자 체결 내역 조회 */
-    async getTradeHistoryByBuyer(user: User) {
-      console.log(user.id)
-      return await this.tradeHistoryRepository.find({
-        where: [{ buyer: user.id }, { seller: user.id }],
-      });
-    }
+  /** 구매자 체결 내역 조회 */
+  async getTradeHistoryByBuyer(user: User) {
+    console.log(user.id);
+    return await this.tradeHistoryRepository.find({
+      where: [{ buyer: user.id }, { seller: user.id }],
+      order: { createdAt: 'DESC' },
+    });
+  }
 
   /** 최종 주문 체결 */
   async tradeStock(input: TradeInput, user: User) {

@@ -59,9 +59,6 @@ export class TradeController {
 
       const result = await this.producerService.onTradeStock(input, user);
 
-      // const currentPrice = await this.stockService.checkCurrentPrice(input);
-      // await this.stockService.checkHighLowPrice(input);
-
       const stocks = await this.stockService.getStockHistory(input);
       await this.eventGateway.broadCastStock(stocks);
       await this.eventGateway.broadCastTrade(input);

@@ -57,7 +57,6 @@ export class AuthGuard implements CanActivate {
         request['user'] = user;
 
         return true;
-        // return true;
         // 액세스 O, 리프레시 O
       } catch (error) {
         throw new HttpException(

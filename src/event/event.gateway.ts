@@ -9,7 +9,6 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { TradeHistory } from 'src/database/entity/tradeHistory.entity';
 import { StockHistory } from 'src/database/schema/stockHistory.schema';
 import { StockService } from 'src/stock/stock.service';
 import { onTradeStockInput } from 'src/trade/dto/on-trade-stock.dto';
@@ -60,7 +59,8 @@ export class EventGateway
   ) {
     console.log('📩 [sent-stock] 이벤트 감지됨!');
     console.log('📨 받은 메시지:', message);
-    const stock = await this.stockService.getStockHistory(message);
+    const input = { code: message };
+    const stock = await this.stockService.getStockHistory(input);
     console.log('📨 보낼 메시지:', stock);
     this.server.emit('stock', stock);
   }
