@@ -14,6 +14,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import * as winston from 'winston';
     TradeModule,
     ConsumerModule,
     ProducerModule,
+    AccountModule,
   ],
   controllers: [],
   providers: [EventGateway],

@@ -1,11 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { WsAdapter } from '@nestjs/platform-ws';
 import cookieParser from 'cookie-parser';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ValidationPipe } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import e from 'express';
 
 declare const module: any;
 
@@ -18,6 +16,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
+    // origin: 'https://stocktradings.netlify.app',
     origin: true,
     credentials: true,
     exposedHeaders: ['Authorization', 'Origin', 'X-Requested-With', 'Content-Type', 'Accept'],

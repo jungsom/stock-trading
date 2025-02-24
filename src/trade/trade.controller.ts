@@ -91,7 +91,7 @@ export class TradeController {
    * @return {Promise<TradeOutput[]>}
    * @description 전체 호가 조회
    */
-  @Get('/order/:code')
+  @Get('order/:code')
   async getAllTrades(
     @Param('code') code: string,
   ): Promise<TradeOutput[] | BaseOutput> {
