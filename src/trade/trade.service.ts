@@ -97,18 +97,7 @@ export class TradeService {
       order: { price: 'ASC', createdAt: 'ASC' },
     });
 
-    // 체결할 주문이 없을 시,
-    if (ordersToSell.length === 0 || ordersToBuy.length === 0) {
-      await this.tradeRepository.save({
-        ...input,
-        userId: user.id,
-        user: user,
-      });
-      return {
-        isSuccess: true,
-        message: '체결할 주문이 없습니다. 잔여 매도 주문이 완료되었습니다.',
-      };
-    }
+    console.log(ordersToSell);
 
     // 체결할 주문 중 같은 가격이 있을 시,
     if (EqualPriceOrders.length > 0) {
@@ -153,7 +142,8 @@ export class TradeService {
           seller: user.id,
           buyer: order.userId,
         });
-        input.quantity -= order.quantity; // input 값 남아있는 상태
+        input.quantity -= order.quantity;
+
         await this.tradeRepository.delete(order.id); // 매수 주문 삭제
       } else if (input.quantity < order.quantity) {
         await this.createTradeHistory({

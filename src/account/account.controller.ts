@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Inject,
   LoggerService,
   Post,
@@ -14,6 +15,7 @@ import { AuthUser } from 'src/auth/auth.decorator';
 import { User } from 'src/database/entity/user.entity';
 import { uuid } from 'src/common/uuid';
 import { AccountService } from './account.service';
+import { BaseOutput } from 'src/common/dto/base.dto';
 
 @Controller('account')
 export class AccountController {
@@ -22,6 +24,47 @@ export class AccountController {
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
   ) {}
+
+  /**
+   * @function getCurrentAccount
+   * @param {AccountInput} input
+   * @return {Promise<AccountOutput>}
+   * @description 계좌 조회
+   */
+  @UseGuards(AuthGuard)
+  @Get()
+  async getCurrentAccount(
+    @AuthUser() user: User,
+  ): Promise<AccountOutput> {
+    const transaction_id = uuid();
+    try {
+      this.logger.log({
+        message: `[${transaction_id}] start `,
+        context: `${AccountController.name} getCurrentAccount `,
+      });
+
+      const result = await this.accountService.getCurrentAccount(user);
+
+      return result;
+    } catch (e) {
+      this.logger.error({
+        message: `[${transaction_id}] fail `,
+        context: `${AccountController.name} getCurrentAccount `,
+        error: e,
+      });
+      return {
+        error: {
+          code: e.status,
+          message: e.message,
+        },
+      };
+    } finally {
+      this.logger.log({
+        message: `[${transaction_id}] end `,
+        context: `${AccountController.name} getCurrentAccount `,
+      });
+    }
+  }
 
   /**
    * @function registerBank
