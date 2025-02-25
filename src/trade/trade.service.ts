@@ -50,7 +50,6 @@ export class TradeService {
 
   /** 판매자 체결 내역 조회 */
   async getTradeHistoryBySeller(user: User) {
-    console.log(user.id);
     return await this.tradeHistoryRepository.find({
       where: [{ buyer: user.id }, { seller: user.id }],
       order: { createdAt: 'DESC' },
@@ -59,7 +58,6 @@ export class TradeService {
 
   /** 구매자 체결 내역 조회 */
   async getTradeHistoryByBuyer(user: User) {
-    console.log(user.id);
     return await this.tradeHistoryRepository.find({
       where: [{ buyer: user.id }, { seller: user.id }],
       order: { createdAt: 'DESC' },
@@ -71,13 +69,8 @@ export class TradeService {
     const tradeType =
       input.type === TradeType.BUY ? TradeType.SELL : TradeType.BUY;
 
-    const EqualPriceOrders = await this.tradeRepository.find({
-      where: {
-        code: input.code,
-        price: Equal(input.price),
-      },
-      order: { createdAt: 'ASC' },
-    });
+    // 동일 가격 먼저 확인
+    await this.checkEqualOrders(input, tradeType, user);
 
     const ordersToBuy = await this.tradeRepository.find({
       where: {
@@ -96,22 +89,6 @@ export class TradeService {
       },
       order: { price: 'ASC', createdAt: 'ASC' },
     });
-
-    console.log(ordersToSell);
-
-    // 체결할 주문 중 같은 가격이 있을 시,
-    if (EqualPriceOrders.length > 0) {
-      tradeType === TradeType.BUY
-        ? await this.sellStocks(EqualPriceOrders, input, user)
-        : await this.buyStocks(EqualPriceOrders, input, user);
-    }
-
-    if (input.quantity === 0) {
-      return {
-        isSuccess: true,
-        message: '동일 가격으로 체결이 완료되었습니다.',
-      };
-    }
 
     // 체결할 주문 중 다른 가격이 있을 시,
     tradeType === TradeType.BUY
@@ -132,6 +109,10 @@ export class TradeService {
   /** 매도 */
   private async sellStocks(sellOrders: Trade[], input: TradeInput, user: User) {
     for (let order of sellOrders) {
+      // input.quantity가 0이 되면 루프 종료
+      if (input.quantity === 0) {
+        break;
+      }
       // 매도 수량 > 매수 수량
       if (input.quantity > order.quantity) {
         await this.createTradeHistory({
@@ -170,11 +151,6 @@ export class TradeService {
         input.quantity = 0;
         await this.tradeRepository.delete(order.id); // 매수 주문 삭제
       }
-
-      // input.quantity가 0이 되면 루프 종료
-      if (input.quantity === 0) {
-        break;
-      }
     }
     return input;
   }
@@ -182,6 +158,10 @@ export class TradeService {
   /** 매수 */
   private async buyStocks(buyOrders: Trade[], input: TradeInput, user: User) {
     for (let order of buyOrders) {
+      // input.quantity가 0이 되면 루프 종료
+      if (input.quantity === 0) {
+        break;
+      }
       // 매수 수량 > 매도 수량
       if (input.quantity > order.quantity) {
         await this.createTradeHistory({
@@ -210,7 +190,7 @@ export class TradeService {
         // 매도 주문 수량 == 매수 주문 수량
       } else if (input.quantity === order.quantity) {
         await this.createTradeHistory({
-          ...input,
+          code: input.code,
           price: order.price,
           type: TradeHistoryType.ALL_TRADE,
           quantity: order.quantity,
@@ -220,14 +200,36 @@ export class TradeService {
         input.quantity = 0;
         await this.tradeRepository.delete(order.id); // 매도 주문 삭제
       }
-
-      // input.quantity가 0이 되면 루프 종료
-      if (input.quantity === 0) {
-        break;
-      }
     }
 
     return input;
+  }
+
+  /** 동일 가격 우선 체결 */
+  private async checkEqualOrders(
+    input: TradeInput,
+    tradeType: TradeType,
+    user: User,
+  ) {
+    const orders = await this.tradeRepository.find({
+      where: {
+        code: input.code,
+        type: tradeType,
+        price: Equal(input.price),
+      },
+      order: { price: 'ASC', createdAt: 'ASC' },
+    });
+
+    tradeType === TradeType.BUY
+      ? await this.sellStocks(orders, input, user)
+      : await this.buyStocks(orders, input, user);
+
+    if (input.quantity === 0) {
+      return {
+        isSuccess: true,
+        message: '동일 가격으로 체결이 완료되었습니다.',
+      };
+    }
   }
 
   /** 체결 내역 생성 */
